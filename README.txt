@@ -1,4 +1,4 @@
-* McQueen Vision V0.9
+# McQueen Vision V0.9
 
 First pass at a Raspberry Pi based vision system for Greg.
 
