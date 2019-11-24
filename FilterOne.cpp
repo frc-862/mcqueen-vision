@@ -8,11 +8,13 @@ FilterOne::FilterOne() {
 * Runs an iteration of the pipeline and updates outputs.
 */
 void FilterOne::Process(cv::Mat& source0){
+  auto start = std::chrono::steady_clock::now();
+
 	//Step Blur0:
 	//input
 	cv::Mat blurInput = source0;
-	BlurType blurType = BlurType::GAUSSIAN;
-	double blurRadius = 0.0;  // default Double
+	BlurType blurType = BlurType::MEDIAN;
+	double blurRadius = 0.990990990990992;  // default Double
 	blur(blurInput, blurType, blurRadius, this->blurOutput);
 	//Step HSL_Threshold0:
 	//input
@@ -26,6 +28,8 @@ void FilterOne::Process(cv::Mat& source0){
 	cv::Mat findContoursInput = hslThresholdOutput;
 	bool findContoursExternalOnly = false;  // default Boolean
 	findContours(findContoursInput, findContoursExternalOnly, this->findContoursOutput);
+
+#if 1
 	//Step Filter_Contours0:
 	//input
 	std::vector<std::vector<cv::Point> > filterContoursContours = findContoursOutput;
@@ -41,6 +45,10 @@ void FilterOne::Process(cv::Mat& source0){
 	double filterContoursMinRatio = 0.5;  // default Double
 	double filterContoursMaxRatio = 1.75;  // default Double
 	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
+#endif
+
+  auto end = std::chrono::steady_clock::now();
+  elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 }
 
 /**

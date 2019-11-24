@@ -26,6 +26,9 @@
 
 namespace fs = std::filesystem;
 
+const int width = 640;
+const int height = 480; 
+
 /*
    JSON format:
    {
@@ -70,7 +73,7 @@ namespace fs = std::filesystem;
  */
 
 static const char* configFile = "/boot/frc.json";
-static SafeQueue<cv::Mat> loggingQueue;
+static SafeQueue<std::pair<cv::Mat,int>> loggingQueue;
 
 namespace {
 
@@ -327,7 +330,8 @@ int main(int argc, char* argv[]) {
             [&](grip::FilterOne &pipeline) {
 
                 // do something with pipeline results
-                const auto& contours = *pipeline.GetFilterContoursOutput();
+                //const auto& contours = *pipeline.GetFilterContoursOutput();
+                const auto& contours = *pipeline.GetFindContoursOutput();
                 ntab->PutNumber("Found", contours.size());
 
                 if (contours.size() < 1) {
@@ -347,14 +351,15 @@ int main(int argc, char* argv[]) {
                     }
 
                     auto center = (largest.br() + largest.tl()) / 2;
-                    ntab->PutNumber("X", center.x);
-                    ntab->PutNumber("Y", center.y);
+                    ntab->PutNumber("X", center.x - width / 2);
+                    ntab->PutNumber("Y", height / 2 - center.y);
                 }
 
-                if (log_images) {
+                if (log_images && (counter++ % 90) == 0) {
                     std::cout << "Queue image to log\n";
-                    loggingQueue.push(*pipeline.GetBlurOutput());
-                    loggingQueue.push(*pipeline.GetHslThresholdOutput());
+                    loggingQueue.push(std::make_pair(*pipeline.GetBlurOutput(), contours.size()));
+                    loggingQueue.push(std::make_pair(*pipeline.GetHslThresholdOutput(), contours.size()));
+                    std::cout << "Milliseconds to process: " << pipeline.GetDuration() << "\n";
                 }
 
             });
@@ -375,9 +380,9 @@ int main(int argc, char* argv[]) {
 
                 const fs::path base_name = log_path / "image";
                 for(;;) {
-                    cv::Mat img = loggingQueue.shift();
+                    auto info = loggingQueue.shift();
                     std::cout << "We have an image\n";
-                    cv::imwrite(image_name(index++, base_name), img);
+                    cv::imwrite(image_name(index++, base_name.c_str() + std::string("-") + std::to_string(info.second) + "-"), info.first);
                 }
             }
 

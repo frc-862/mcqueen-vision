@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <chrono>
 #include <math.h>
 
 namespace grip {
@@ -28,6 +29,7 @@ enum BlurType {
 */
 class FilterOne {
 	private:
+    unsigned long elapsed;
 		cv::Mat blurOutput;
 		cv::Mat hslThresholdOutput;
 		std::vector<std::vector<cv::Point> > findContoursOutput;
@@ -44,6 +46,7 @@ class FilterOne {
 		cv::Mat* GetHslThresholdOutput();
 		std::vector<std::vector<cv::Point> >* GetFindContoursOutput();
 		std::vector<std::vector<cv::Point> >* GetFilterContoursOutput();
+    unsigned long GetDuration() { return elapsed; }
 };
 
 
