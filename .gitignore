@@ -1,4 +1,8 @@
+img
+*.json
 *.o
 *.exe
 multiCameraServerExample
+lightningVision
+*.orig
 

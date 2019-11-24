@@ -35,7 +35,7 @@ On the rPi web dashboard:
 1) Make the rPi writable by selecting the "Writable" tab
 2) In the rPi web dashboard Application tab, select the
    "Uploaded C++ executable" option for Application
-3) Click "Browse..." and select the "multiCameraServerExample" executable in
+3) Click "Browse..." and select the "lightingVision" executable in
    your desktop project directory
 4) Click Save
 

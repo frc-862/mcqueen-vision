@@ -17,9 +17,9 @@ void FilterOne::Process(cv::Mat& source0){
 	//Step HSL_Threshold0:
 	//input
 	cv::Mat hslThresholdInput = blurOutput;
-	double hslThresholdHue[] = {50.17985611510791, 73.10005985025224};
-	double hslThresholdSaturation[] = {0.0, 177.07130730050937};
-	double hslThresholdLuminance[] = {20.638489208633093, 255.0};
+	double hslThresholdHue[] = {48.561151079136685, 86.85218209133883};
+	double hslThresholdSaturation[] = {64.20863309352518, 255.0};
+	double hslThresholdLuminance[] = {36.690647482014384, 255.0};
 	hslThreshold(hslThresholdInput, hslThresholdHue, hslThresholdSaturation, hslThresholdLuminance, this->hslThresholdOutput);
 	//Step Find_Contours0:
 	//input
@@ -29,17 +29,17 @@ void FilterOne::Process(cv::Mat& source0){
 	//Step Filter_Contours0:
 	//input
 	std::vector<std::vector<cv::Point> > filterContoursContours = findContoursOutput;
-	double filterContoursMinArea = 0;  // default Double
-	double filterContoursMinPerimeter = 0;  // default Double
-	double filterContoursMinWidth = 0;  // default Double
-	double filterContoursMaxWidth = 1000;  // default Double
+	double filterContoursMinArea = 0.0;  // default Double
+	double filterContoursMinPerimeter = 0.0;  // default Double
+	double filterContoursMinWidth = 0.0;  // default Double
+	double filterContoursMaxWidth = 1000.0;  // default Double
 	double filterContoursMinHeight = 18.0;  // default Double
-	double filterContoursMaxHeight = 1000;  // default Double
-	double filterContoursSolidity[] = {0.0, 100};
-	double filterContoursMaxVertices = 1000000;  // default Double
-	double filterContoursMinVertices = 0;  // default Double
-	double filterContoursMinRatio = 0.0;  // default Double
-	double filterContoursMaxRatio = 1000;  // default Double
+	double filterContoursMaxHeight = 1000.0;  // default Double
+	double filterContoursSolidity[] = {0.0, 100.0};
+	double filterContoursMaxVertices = 50.0;  // default Double
+	double filterContoursMinVertices = 0.0;  // default Double
+	double filterContoursMinRatio = 0.5;  // default Double
+	double filterContoursMaxRatio = 1.75;  // default Double
 	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
 }
 
