@@ -33,7 +33,12 @@ Install the Raspbian compiler [1] and put it on your PATH.
 Building
 --------
 
-Run "make"
+Added cmake support:
+
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../rpi.cmake 
+make
 
 ---------
 Deploying
@@ -50,3 +55,4 @@ On the rPi web dashboard:
 
 The application will be automatically started.  Console output can be seen by
 enabling console output in the Vision Status tab.
+
