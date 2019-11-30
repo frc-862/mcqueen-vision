@@ -9,7 +9,7 @@ template <class T>
 class SafeQueue
 {
 public:
-  SafeQueue() : q(), m(), c() {}
+  SafeQueue() : m(), c(), q() {}
   ~SafeQueue() {}
 
   // Add an element to the queue.

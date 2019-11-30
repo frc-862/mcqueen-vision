@@ -20,6 +20,9 @@
 #include <wpi/raw_ostream.h>
 #include <opencv2/opencv.hpp>
 
+#include "OledFont8x16.h"
+#include "OledI2C.h"
+
 #include "cameraserver/CameraServer.h"
 #include "FilterOne.h"
 #include "safe_queue.h"
@@ -27,8 +30,27 @@
 namespace fs = std::filesystem;
 
 const int width = 640;
-const int height = 480; 
+const int height = 480;
+const int halfWidth = width / 2;
+const int halfHeight = height / 2;
 
+
+const char* message[] = {
+  "Joe is mom",
+  "Lightning Lucky",
+  "Greg was here",
+  "Steam Works was a good time",
+  "Flash was our slowest robot",
+  "Programming Rules",
+  "Selfies with Greg",
+  "Raspberry Pi is yummy",
+  "Beat-Nicks",
+  0
+}; 
+
+const int msgCount = 9;
+int msgIndex = 1;
+                        
 /*
    JSON format:
    {
@@ -255,11 +277,11 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
     .AddListener(
     [server](const auto& event) mutable {
         if (event.value->IsDouble()) {
-            int i = event.value->GetDouble();
+            size_t i = event.value->GetDouble();
             if (i >= 0 && i < cameras.size()) server.SetSource(cameras[i]);
         } else if (event.value->IsString()) {
             auto str = event.value->GetString();
-            for (int i = 0; i < cameraConfigs.size(); ++i) {
+            for (size_t i = 0; i < cameraConfigs.size(); ++i) {
                 if (str == cameraConfigs[i].name) {
                     server.SetSource(cameras[i]);
                     break;
@@ -320,6 +342,8 @@ int main(int argc, char* argv[]) {
     for (const auto& config : switchedCameraConfigs) StartSwitchedCamera(config);
 
     // start image processing on camera 0 if present
+    int x, y, count;
+
     if (cameras.size() >= 1) {
         std::thread([&] {
             bool log_images = fs::exists("/mnt/log/img");
@@ -332,11 +356,12 @@ int main(int argc, char* argv[]) {
                 // do something with pipeline results
                 //const auto& contours = *pipeline.GetFilterContoursOutput();
                 const auto& contours = *pipeline.GetFindContoursOutput();
-                ntab->PutNumber("Found", contours.size());
+                count = contours.size();
+                ntab->PutNumber("Found", count);
 
                 if (contours.size() < 1) {
-                    ntab->PutNumber("X", 0);
-                    ntab->PutNumber("Y", 0);
+                    ntab->PutNumber("X", x = 0);
+                    ntab->PutNumber("Y", y = 0);
                 } else {
 
                     // would rather use std::max_element; however we would recalc
@@ -350,9 +375,12 @@ int main(int argc, char* argv[]) {
                         }
                     }
 
-                    auto center = (largest.br() + largest.tl()) / 2;
-                    ntab->PutNumber("X", center.x - width / 2);
-                    ntab->PutNumber("Y", height / 2 - center.y);
+                    const auto center = (largest.br() + largest.tl()) / 2;
+                    x = center.x - halfWidth;
+                    y = halfHeight - center.y;
+
+                    ntab->PutNumber("X", x);
+                    ntab->PutNumber("Y", y);
                 }
 
                 if (log_images && (counter++ % 90) == 0) {
@@ -388,6 +416,71 @@ int main(int argc, char* argv[]) {
 
         }).detach();
 
+        std::thread([&] {
+            try
+            {
+                SSD1306::OledI2C oled{"/dev/i2c-1", 0x3C};
+                oled.clear();
+                oled.displayUpdate();
+
+                for(;;) {
+                    auto row = 0;
+
+                    drawString8x16(SSD1306::OledPoint{0, row * 16}, "Lightning Vision V1.0",
+                                   SSD1306::PixelStyle::Set, oled);
+                    ++row;
+
+                    {
+                        std::ostringstream os;
+                        os << "Object Count: " << count;
+                        drawString8x16(SSD1306::OledPoint{0, row * 16}, os.str(),
+                                       SSD1306::PixelStyle::Set, oled);
+                        ++row;
+                    }
+
+
+                    {
+                        std::ostringstream os;
+                        os << "X: " << x << "     Y: " << y;
+                        drawString8x16(SSD1306::OledPoint{0, row * 16}, os.str(),
+                                       SSD1306::PixelStyle::Set, oled);
+                        ++row;
+                    }
+
+                    {
+                        if (rand() % 60 == 0) {
+                          msgIndex = rand() % msgCount;
+                        }
+                        std::ostringstream os;
+                        drawString8x16(SSD1306::OledPoint{0, row * 16}, message[msgIndex],
+                                       SSD1306::PixelStyle::Set, oled);
+                    }
+                    
+                    oled.displayUpdate();
+                    std::this_thread::sleep_for (std::chrono::seconds(1));
+                }
+
+                //std::random_device randomDevice;
+                //std::mt19937 randomGenerator{randomDevice()};
+                //std::uniform_int_distribution<> xDistribution{0, oled.width() - 1};
+                //std::uniform_int_distribution<> yDistribution{0, oled.height() - 1};
+
+                //oled.displayInverse();
+                //oled.displayNormal();
+                //oled.displayOn();
+                //oled.displayOff();
+                //oled.xorPixel(p);
+                //oled.displayUpdate();
+
+                //oled.clear();
+                //oled.displayUpdate();
+            }
+            catch (std::exception& e)
+            {
+                std::cerr << e.what() << "\n";
+            }
+
+        }).detach();
     }
 
     // loop forever
