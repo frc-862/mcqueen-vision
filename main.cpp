@@ -20,8 +20,8 @@
 #include <wpi/raw_ostream.h>
 #include <opencv2/opencv.hpp>
 
-#include "OledFont8x16.h"
-#include "OledI2C.h"
+//#include "OledFont8x16.h"
+//#include "OledI2C.h"
 
 #include "cameraserver/CameraServer.h"
 #include "FilterOne.h"
@@ -410,7 +410,15 @@ int main(int argc, char* argv[]) {
                 for(;;) {
                     auto info = loggingQueue.shift();
                     std::cout << "We have an image\n";
-                    cv::imwrite(image_name(index++, base_name.c_str() + std::string("-") + std::to_string(info.second) + "-"), info.first);
+                    bool imgResult = cv::imwrite(image_name(index++, base_name.c_str() + std::string("-") + std::to_string(info.second) + "-"), info.first);
+                    if (imgResult)
+                    {
+                        printf("\nImage Written Success\n");                   
+                    }
+                    else 
+                    {
+                        puts("image write failure");
+                    }
                 }
             }
 
@@ -418,7 +426,7 @@ int main(int argc, char* argv[]) {
 
         std::thread([&] {
             try
-            {
+            {/*
                 SSD1306::OledI2C oled{"/dev/i2c-1", 0x3C};
                 oled.clear();
                 oled.displayUpdate();
@@ -459,7 +467,7 @@ int main(int argc, char* argv[]) {
                     oled.displayUpdate();
                     std::this_thread::sleep_for (std::chrono::seconds(1));
                 }
-
+*/
                 //std::random_device randomDevice;
                 //std::mt19937 randomGenerator{randomDevice()};
                 //std::uniform_int_distribution<> xDistribution{0, oled.width() - 1};
