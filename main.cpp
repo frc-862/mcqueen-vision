@@ -20,11 +20,8 @@
 #include <wpi/raw_ostream.h>
 #include <opencv2/opencv.hpp>
 
-#include "OledFont8x16.h"
-#include "OledI2C.h"
-
 #include "cameraserver/CameraServer.h"
-#include "FilterOne.h"
+#include "InfiniteRecharge.h"
 #include "safe_queue.h"
 
 namespace fs = std::filesystem;
@@ -35,22 +32,6 @@ const int halfWidth = width / 2;
 const int halfHeight = height / 2;
 
 
-const char* message[] = {
-  "Joe is mom",
-  "Lightning Lucky",
-  "Greg was here",
-  "Steam Works was a good time",
-  "Flash was our slowest robot",
-  "Programming Rules",
-  "Selfies with Greg",
-  "Raspberry Pi is yummy",
-  "Beat-Nicks",
-  0
-}; 
-
-const int msgCount = 9;
-int msgIndex = 1;
-                        
 /*
    JSON format:
    {
@@ -294,22 +275,37 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
     return server;
 }
 
-// example pipeline
-class MyPipeline : public frc::VisionPipeline {
+// wrapper pipeline
+class Pipeline : public grip::InfiniteRecharge {
 public:
-    int val = 0;
-    nt::NetworkTableInstance ntinst;
-    std::shared_ptr< NetworkTable > ntab;
-
-    MyPipeline() : ntinst(nt::NetworkTableInstance::GetDefault()) {
-        ntab = ntinst.GetTable("Flash");
+    Pipeline() {  
     }
 
     void Process(cv::Mat& mat) override {
-        ++val;
-        cv::imwrite("/mnt/log/img/img" + std::to_string(val) + ".jpg", mat);
-        ntab->PutNumber("Frame", val);
+      auto start = std::chrono::steady_clock::now();
+      source = mat;
+      grip::InfiniteRecharge::Process(mat);
+      auto end = std::chrono::steady_clock::now();
+      elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
+
+
+		cv::Mat* GetSource() {
+	    return &(this->source);
+    }
+
+    cv::Mat* GetMasked() {
+      return GetCvErodeOutput();
+    }
+
+		std::vector<std::vector<cv::Point> >* GetContours() {
+      return GetFilterContoursOutput();
+    }
+
+    unsigned long GetDuration() { return elapsed; }
+private:
+		cv::Mat source;
+    double elapsed;
 };
 }  // namespace
 
@@ -350,12 +346,11 @@ int main(int argc, char* argv[]) {
             int counter = 0;
             auto ntab = ntinst.GetTable("Vision");
 
-            frc::VisionRunner<grip::FilterOne> runner(cameras[0], new grip::FilterOne(),
-            [&](grip::FilterOne &pipeline) {
+            frc::VisionRunner<Pipeline> runner(cameras[0], new Pipeline(),
+            [&](Pipeline &pipeline) {
 
                 // do something with pipeline results
-                //const auto& contours = *pipeline.GetFilterContoursOutput();
-                const auto& contours = *pipeline.GetFindContoursOutput();
+                const auto& contours = *pipeline.GetContours();
                 count = contours.size();
                 ntab->PutNumber("Found", count);
 
@@ -385,8 +380,8 @@ int main(int argc, char* argv[]) {
 
                 if (log_images && (counter++ % 90) == 0) {
                     std::cout << "Queue image to log\n";
-                    loggingQueue.push(std::make_pair(*pipeline.GetBlurOutput(), contours.size()));
-                    loggingQueue.push(std::make_pair(*pipeline.GetHslThresholdOutput(), contours.size()));
+                    loggingQueue.push(std::make_pair(*pipeline.GetSource(), contours.size()));
+                    loggingQueue.push(std::make_pair(*pipeline.GetMasked(), contours.size()));
                     std::cout << "Milliseconds to process: " << pipeline.GetDuration() << "\n";
                 }
 
@@ -412,72 +407,6 @@ int main(int argc, char* argv[]) {
                     std::cout << "We have an image\n";
                     cv::imwrite(image_name(index++, base_name.c_str() + std::string("-") + std::to_string(info.second) + "-"), info.first);
                 }
-            }
-
-        }).detach();
-
-        std::thread([&] {
-            try
-            {
-                SSD1306::OledI2C oled{"/dev/i2c-1", 0x3C};
-                oled.clear();
-                oled.displayUpdate();
-
-                for(;;) {
-                    auto row = 0;
-
-                    drawString8x16(SSD1306::OledPoint{0, row * 16}, "Lightning Vision V1.0",
-                                   SSD1306::PixelStyle::Set, oled);
-                    ++row;
-
-                    {
-                        std::ostringstream os;
-                        os << "Object Count: " << count;
-                        drawString8x16(SSD1306::OledPoint{0, row * 16}, os.str(),
-                                       SSD1306::PixelStyle::Set, oled);
-                        ++row;
-                    }
-
-
-                    {
-                        std::ostringstream os;
-                        os << "X: " << x << "     Y: " << y;
-                        drawString8x16(SSD1306::OledPoint{0, row * 16}, os.str(),
-                                       SSD1306::PixelStyle::Set, oled);
-                        ++row;
-                    }
-
-                    {
-                        if (rand() % 60 == 0) {
-                          msgIndex = rand() % msgCount;
-                        }
-                        std::ostringstream os;
-                        drawString8x16(SSD1306::OledPoint{0, row * 16}, message[msgIndex],
-                                       SSD1306::PixelStyle::Set, oled);
-                    }
-                    
-                    oled.displayUpdate();
-                    std::this_thread::sleep_for (std::chrono::seconds(1));
-                }
-
-                //std::random_device randomDevice;
-                //std::mt19937 randomGenerator{randomDevice()};
-                //std::uniform_int_distribution<> xDistribution{0, oled.width() - 1};
-                //std::uniform_int_distribution<> yDistribution{0, oled.height() - 1};
-
-                //oled.displayInverse();
-                //oled.displayNormal();
-                //oled.displayOn();
-                //oled.displayOff();
-                //oled.xorPixel(p);
-                //oled.displayUpdate();
-
-                //oled.clear();
-                //oled.displayUpdate();
-            }
-            catch (std::exception& e)
-            {
-                std::cerr << e.what() << "\n";
             }
 
         }).detach();
