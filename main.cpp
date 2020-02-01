@@ -351,10 +351,15 @@ int main(int argc, char* argv[]) {
 
                 // do something with pipeline results
                 const auto& contours = *pipeline.GetContours();
-                count = contours.size();
+
+                // smooth the contours
+		            std::vector<std::vector<cv::Point> > smooth;
+                cv::approxPolyDP(contours, smooth, 3, true);
+
+                count = smooth.size();
                 ntab->PutNumber("Found", count);
 
-                if (contours.size() < 1) {
+                if (smooth.size() < 1) {
                     ntab->PutNumber("X", x = 0);
                     ntab->PutNumber("Y", y = 0);
                 } else {
@@ -362,8 +367,11 @@ int main(int argc, char* argv[]) {
                     // would rather use std::max_element; however we would recalc
                     // boundingRect too often, mapping to boundingRect first would
                     // waste memory and use extra ram, so we do it by hand
+                    //
+                    // TODO: Use height of bounding box, as a ratio to height of 
+                    // contour to filter
                     cv::Rect largest(0,0,0,0);
-                    for (const auto object : contours) {
+                    for (const auto object : smooth) {
                         auto rect = cv::boundingRect(object);
                         if (rect.area() > largest.area()) {
                             largest = rect;
@@ -380,8 +388,8 @@ int main(int argc, char* argv[]) {
 
                 if (log_images && (counter++ % 90) == 0) {
                     std::cout << "Queue image to log\n";
-                    loggingQueue.push(std::make_pair(*pipeline.GetSource(), contours.size()));
-                    loggingQueue.push(std::make_pair(*pipeline.GetMasked(), contours.size()));
+                    loggingQueue.push(std::make_pair(*pipeline.GetSource(), smooth.size()));
+                    loggingQueue.push(std::make_pair(*pipeline.GetMasked(), smooth.size()));
                     std::cout << "Milliseconds to process: " << pipeline.GetDuration() << "\n";
                 }
 
