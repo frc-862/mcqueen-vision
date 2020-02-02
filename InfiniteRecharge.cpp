@@ -11,9 +11,9 @@ void InfiniteRecharge::Process(cv::Mat& source0){
 	//Step HSV_Threshold0:
 	//input
 	cv::Mat hsvThresholdInput = source0;
-	double hsvThresholdHue[] = {50.17985611510791, 108.18336162988116};
-	double hsvThresholdSaturation[] = {112.36510791366906, 254};
-	double hsvThresholdValue[] = {0.0, 144.60101867572158};
+	double hsvThresholdHue[] = {46.942446043165454, 97.48726655348048};
+	double hsvThresholdSaturation[] = {126.12410071942446, 250.67062818336163};
+	double hsvThresholdValue[] = {4.586330935251798, 255.0};
 	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
 	//Step CV_dilate0:
 	//input
