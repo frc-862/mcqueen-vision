@@ -76,7 +76,16 @@ const int halfHeight = height / 2;
  */
 
 static const char* configFile = "/boot/frc.json";
-static SafeQueue<std::pair<cv::Mat,int>> loggingQueue;
+
+struct ImageInfo {
+  const char* tag;
+  int x;
+  int y;
+  int height;
+  size_t count;
+};
+
+static SafeQueue<std::pair<cv::Mat,ImageInfo>> loggingQueue;
 
 namespace {
 
@@ -278,8 +287,7 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
 // wrapper pipeline
 class Pipeline : public grip::InfiniteRecharge {
 public:
-    Pipeline() {  
-    }
+    Pipeline() { }
 
     void Process(cv::Mat& mat) override {
       auto start = std::chrono::steady_clock::now();
@@ -288,7 +296,6 @@ public:
       auto end = std::chrono::steady_clock::now();
       elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
-
 
 		cv::Mat* GetSource() {
 	    return &(this->source);
@@ -308,6 +315,18 @@ private:
     double elapsed;
 };
 }  // namespace
+
+std::string meta_data_name(int index, std::string path, const ImageInfo& info, std::string suffix = ".json") {
+    int leading = 5; //6 at max
+    return path + "/" + std::string(info.tag) + "-" + 
+           std::to_string(index * 0.000001).substr(8-leading) + suffix;
+}
+
+std::string image_name(int index, std::string path, const ImageInfo& info, std::string suffix = ".jpg") {
+    int leading = 5; //6 at max
+    return path + "/" + std::string(info.tag) + "-" + 
+           std::to_string(index * 0.000001).substr(8-leading) + suffix;
+}
 
 std::string image_name(int index, std::string prefix = "image", std::string suffix = ".jpg") {
     int leading = 5; //6 at max
@@ -338,32 +357,57 @@ int main(int argc, char* argv[]) {
     for (const auto& config : switchedCameraConfigs) StartSwitchedCamera(config);
 
     // start image processing on camera 0 if present
-    int x, y, count;
-
+    int x, y, height, count;
+    auto source = frc::CameraServer::GetInstance()->PutVideo("debug", 640, 480);
+    auto fout = frc::CameraServer::GetInstance()->PutVideo("fout", 640, 480);
+    cv::Scalar red(255, 0, 0);
+ 
     if (cameras.size() >= 1) {
         std::thread([&] {
             bool log_images = fs::exists("/mnt/log/img");
             int counter = 0;
-            auto ntab = ntinst.GetTable("Vision");
+            auto ntab = ntinst.GetTable("SmartDashboard");
 
             frc::VisionRunner<Pipeline> runner(cameras[0], new Pipeline(),
             [&](Pipeline &pipeline) {
-
                 // do something with pipeline results
                 const auto& contours = *pipeline.GetContours();
+                source.PutFrame(*pipeline.GetMasked());
 
-                // smooth the contours
-		            std::vector<std::vector<cv::Point> > smooth;
-                cv::approxPolyDP(contours, smooth, 3, true);
+                // smooth the contours (bug before was that 
+                // approxPolyDP takes a single contour, not
+                // a vector of contours
 
+								//std::vector<std::vector<cv::Point> > smooth;
+                //try {
+                //for (const auto& contour : contours) {
+										//std::vector<cv::Point> scontour;
+                    //cv::approxPolyDP(contour, smooth, 3, true);
+                    //smooth.push_back(scontour);
+                //}
+                //} catch (cv::Exception& err) {
+                  //std::cerr << "Error processing approxPolyDP: " << err.what() << std::endl; 
+                //}
+                auto& smooth = contours;
                 count = smooth.size();
-                ntab->PutNumber("Found", count);
+
+                auto fun = pipeline.GetSource()->clone();
+                drawContours(fun, smooth, -1, red, 2);
+                std::string msg{"Count: "};
+                msg += std::to_string(count);
+                putText(fun, msg, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+
+                fout.PutFrame(fun);
+
+                ntab->PutNumber("VisionFound", count);
 
                 if (smooth.size() < 1) {
-                    ntab->PutNumber("X", x = 0);
-                    ntab->PutNumber("Y", y = 0);
-                } else {
+                    ntab->PutNumber("VisionX", x = 0);
+                    ntab->PutNumber("VisionY", y = 0);
+                    ntab->PutNumber("VisionHeight", 0);
+                    ntab->PutNumber("VisionDelay", pipeline.GetDuration());
 
+                } else {
                     // would rather use std::max_element; however we would recalc
                     // boundingRect too often, mapping to boundingRect first would
                     // waste memory and use extra ram, so we do it by hand
@@ -381,16 +425,19 @@ int main(int argc, char* argv[]) {
                     const auto center = (largest.br() + largest.tl()) / 2;
                     x = center.x - halfWidth;
                     y = halfHeight - center.y;
+                    height = largest.height;
 
-                    ntab->PutNumber("X", x);
-                    ntab->PutNumber("Y", y);
+                    ntab->PutNumber("VisionX", x);
+                    ntab->PutNumber("VisionY", y);
+                    ntab->PutNumber("VisionHeight", height);
+                    ntab->PutNumber("VisionDelay", pipeline.GetDuration());
                 }
 
                 if (log_images && (counter++ % 90) == 0) {
-                    std::cout << "Queue image to log\n";
-                    loggingQueue.push(std::make_pair(*pipeline.GetSource(), smooth.size()));
-                    loggingQueue.push(std::make_pair(*pipeline.GetMasked(), smooth.size()));
-                    std::cout << "Milliseconds to process: " << pipeline.GetDuration() << "\n";
+                    ImageInfo info = { "src", x, y, height, smooth.size() };
+                    loggingQueue.push(std::make_pair(*pipeline.GetSource(), info));
+                    ImageInfo info2 = { "mask", x, y, height, smooth.size() };
+                    loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
                 }
 
             });
@@ -402,18 +449,31 @@ int main(int argc, char* argv[]) {
             const fs::path log_path("/mnt/log/img");
             bool log_images = fs::exists(log_path);
             int index = 1;
-            std::cout << "Image logger started\n";
             if (log_images) {
-                std::cout << "Logging Images\n";
+                std::cerr << "Logging Images\n";
+
+                for (auto& p : fs::directory_iterator(log_path)) {
+                    if (p.is_block_file()) ++index;
+                }
+
                 while (fs::exists(image_name(index, log_path))) {
                     ++index;
                 }
 
-                const fs::path base_name = log_path / "image";
+                std::cerr << "Index at " << index << "\n";
                 for(;;) {
-                    auto info = loggingQueue.shift();
-                    std::cout << "We have an image\n";
-                    cv::imwrite(image_name(index++, base_name.c_str() + std::string("-") + std::to_string(info.second) + "-"), info.first);
+                    auto info_pair = loggingQueue.shift();
+                    const auto& img = info_pair.first;
+                    const auto& info = info_pair.second;
+
+                    std::ofstream meta(meta_data_name(index, log_path, info));
+                    meta << "{\"tag\":\"" << info.tag << "\",\"x\":" << info.x <<
+                            ",\"y\":" << info.y << ",\"height\":" << info.height <<
+                            ",\"count\":" << info.count << "}";
+                    meta.close();
+
+                    auto fname { image_name(index++, log_path, info) };
+                    cv::imwrite(fname, img);
                 }
             }
 

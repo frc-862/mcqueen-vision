@@ -28,6 +28,8 @@ Added cmake support:
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=../rpi.cmake 
+# or
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../rpi.cmake -DCMAKE_BUILD_TYPE=Release
 make
 
 ### Deploying
