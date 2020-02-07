@@ -30,20 +30,20 @@ namespace bf
 
     typedef std::vector<CFoundBalls> ballList_t;
 
-class CBallFinder
-{
-    public:
-        CBallFinder();
-        void work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls);
+    class CBallFinder
+    {
+        public:
+            CBallFinder();
+            void work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls);
 
-    private:
-        cv::Mat m_hsvImage;
-        cv::Mat m_maskImage;
-        cv::Mat m_blurredImage;
-        
-        
+        private:
+            std::vector< std::vector<cv::Point> > grab_contours(std::vector< std::vector<cv::Point> > f_cnts);
+            cv::Mat m_hsvImage;
+            cv::Mat m_maskImage;
+            cv::Mat m_blurredImage;    
 
-};
+
+    };
 
 }
 

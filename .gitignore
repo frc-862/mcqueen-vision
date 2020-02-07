@@ -6,4 +6,5 @@ multiCameraServerExample
 lightningVision
 *.orig
 build
+ballfinder.py
 
