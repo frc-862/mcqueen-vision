@@ -89,6 +89,7 @@ static SafeQueue<std::pair<cv::Mat,ImageInfo>> loggingQueue;
 
 namespace {
 
+bool debug = false;
 unsigned int team;
 bool server = false;
 
@@ -196,6 +197,13 @@ bool ReadConfig() {
     } catch (const wpi::json::exception& e) {
         ParseError() << "could not read team number: " << e.what() << '\n';
         return false;
+    }
+
+    // debug mode
+    try {
+        debug = j.at("debug").get<bool>();
+    } catch (const wpi::json::exception& e) {
+        debug = false;
     }
 
     // ntmode (optional)
@@ -358,9 +366,15 @@ int main(int argc, char* argv[]) {
 
     // start image processing on camera 0 if present
     int x, y, height, count;
-    auto source = frc::CameraServer::GetInstance()->PutVideo("debug", 640, 480);
-    auto fout = frc::CameraServer::GetInstance()->PutVideo("fout", 640, 480);
-    cv::Scalar red(255, 0, 0);
+    double elapsed;
+    cs::CvSource source;
+    cs::CvSource fout;
+    cv::Scalar blue(255, 0, 0);
+
+    if (debug) {
+      source = frc::CameraServer::GetInstance()->PutVideo("debug", 640, 480);
+      fout = frc::CameraServer::GetInstance()->PutVideo("fout", 640, 480);
+    }
  
     if (cameras.size() >= 1) {
         std::thread([&] {
@@ -370,9 +384,11 @@ int main(int argc, char* argv[]) {
 
             frc::VisionRunner<Pipeline> runner(cameras[0], new Pipeline(),
             [&](Pipeline &pipeline) {
+                auto start = std::chrono::steady_clock::now();
+                //
                 // do something with pipeline results
                 const auto& contours = *pipeline.GetContours();
-                source.PutFrame(*pipeline.GetMasked());
+                if (debug) source.PutFrame(*pipeline.GetMasked());
 
                 // smooth the contours (bug before was that 
                 // approxPolyDP takes a single contour, not
@@ -391,13 +407,15 @@ int main(int argc, char* argv[]) {
                 auto& smooth = contours;
                 count = smooth.size();
 
-                auto fun = pipeline.GetSource()->clone();
-                drawContours(fun, smooth, -1, red, 2);
-                std::string msg{"Count: "};
-                msg += std::to_string(count);
-                putText(fun, msg, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
-
-                fout.PutFrame(fun);
+                if (debug) {
+                  auto fun = pipeline.GetSource()->clone();
+                  drawContours(fun, smooth, -1, blue, 2);
+                  std::string msg{"Count: "};
+                  msg += std::to_string(count);
+                  putText(fun, msg, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, 
+                      cvScalar(200,200,250), 1, CV_AA);
+                  fout.PutFrame(fun);
+                }
 
                 ntab->PutNumber("VisionFound", count);
 
@@ -430,7 +448,7 @@ int main(int argc, char* argv[]) {
                     ntab->PutNumber("VisionX", x);
                     ntab->PutNumber("VisionY", y);
                     ntab->PutNumber("VisionHeight", height);
-                    ntab->PutNumber("VisionDelay", pipeline.GetDuration());
+                    ntab->PutNumber("VisionDelay", pipeline.GetDuration() + elapsed);
                 }
 
                 if (log_images && (counter++ % 90) == 0) {
@@ -440,6 +458,8 @@ int main(int argc, char* argv[]) {
                     loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
                 }
 
+                auto end = std::chrono::steady_clock::now();
+                elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
             });
 
             runner.RunForever();

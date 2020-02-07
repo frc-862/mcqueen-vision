@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.15.0)
 project(lightningVision)
 
-#$<$<CXX_COMPILER_ID:GNU>:-Wno-psabi>
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
-
-
 #--------------------------------------------------------------------------
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

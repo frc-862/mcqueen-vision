@@ -25,6 +25,8 @@ Install the Raspbian compiler [1] and put it on your PATH.
 
 Added cmake support:
 
+export ARM_HOME=/Users/phurley/wpilib/raspbian10
+
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=../rpi.cmake 
