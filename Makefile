@@ -15,9 +15,9 @@ install: build
 clean:
 	rm ${EXE} *.o
 
-main.o: main.cpp safe_queue.h InfiniteRecharge.h 
+main.o: main.cpp safe_queue.h InfiniteRecharge.h ballfinder.h
 
-OBJS=main.o InfiniteRecharge.o
+OBJS=main.o InfiniteRecharge.o ballfinder.o
 
 ${EXE}: ${OBJS}
 	${CXX} -pthread -g -o $@ $^ ${DEPS_LIBS} -Wl,--unresolved-symbols=ignore-in-shared-libs
