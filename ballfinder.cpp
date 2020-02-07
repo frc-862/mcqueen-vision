@@ -32,6 +32,14 @@ cvtColor(m_blurredImage, m_hsvImage, COLOR_BGR2HSV);
 inRange(m_hsvImage, (cv::InputArray) iYellowThresholdsLower, (cv::InputArray) iYellowThresholdUpper, m_maskImage);
 
 
+	cv::Mat cvErodeKernel;
+	cv::Point cvErodeAnchor(-1, -1);
+	double cvErodeIterations = 1.0;  // default Double
+    int cvErodeBordertype = cv::BORDER_CONSTANT;
+
+erode(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
+dilate(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
+
 
 
 }
