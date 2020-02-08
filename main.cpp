@@ -22,6 +22,7 @@
 
 #include "cameraserver/CameraServer.h"
 #include "InfiniteRecharge.h"
+#include "ballfinder.h"
 #include "safe_queue.h"
 
 namespace fs = std::filesystem;
@@ -293,6 +294,18 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
 }
 
 // wrapper pipeline
+class BallPipeline {
+public:
+  void Process(cv::Mat& mat) {
+    bf::ballList_t result;    
+    finder.work(mat, result);
+    std::cout << "Found " << result.size() << " balls." << std::endl;
+  }
+
+private:
+  bf::CBallFinder finder;
+};
+
 class Pipeline : public grip::InfiniteRecharge {
 public:
     Pipeline() { }
@@ -500,6 +513,14 @@ int main(int argc, char* argv[]) {
         }).detach();
     }
 
-    // loop forever
-    for (;;) std::this_thread::sleep_for(std::chrono::seconds(10));
+    if (cameras.size() >= 2) {
+        std::thread([&] {
+            auto ntab = ntinst.GetTable("SmartDashboard");
+
+            frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
+            [&](BallPipeline &pipeline) {
+            });
+        }).detach();
+    }
 }
+

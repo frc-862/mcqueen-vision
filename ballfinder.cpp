@@ -28,7 +28,7 @@ namespace bf
     CBallFinder::getMaxAreaContourId(std::vector< std::vector<cv::Point> > contours) {
         double maxArea = 0;
         int maxAreaContourId = -1;
-        for (int j = 0; j < contours.size(); j++) {
+        for (size_t j = 0; j < contours.size(); j++) {
             double newArea = cv::contourArea(contours.at(j));
             if (newArea > maxArea) {
                 maxArea = newArea;
@@ -50,8 +50,8 @@ namespace bf
 
         cv::Mat cvErodeKernel;
         cv::Point cvErodeAnchor(-1, -1);
-        double cvErodeIterations = 1.0;  // default Double
-        int cvErodeBordertype = cv::BORDER_CONSTANT;
+        //double cvErodeIterations = 1.0;  // default Double
+        //int cvErodeBordertype = cv::BORDER_CONSTANT;
 
         erode(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
         dilate(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
