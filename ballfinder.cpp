@@ -13,15 +13,33 @@ using namespace std;
 namespace bf
 {
 
-
     CBallFinder::CBallFinder()
     {
         m_hsvImage = cv::Mat(iRows, iCols, CV_8UC3);
         m_blurredImage = cv::Mat(iRows, iCols, CV_8UC3);
         m_maskImage  = cv::Mat(iRows, iCols, CV_8UC1);
-        // m_cnts = cv::Mat(iRows, iCols, CV_8UC3);
 
     }
+
+    std::vector< std::vector<cv::Point> >
+    CBallFinder::grab_contours(std::vector< std::vector<cv::Point> > f_contours)
+    {
+        return f_contours; // TODO implement 
+    }
+
+    int 
+    CBallFinder::getMaxAreaContourId(std::vector< std::vector<cv::Point> > contours) {
+        double maxArea = 0;
+        int maxAreaContourId = -1;
+        for (int j = 0; j < contours.size(); j++) {
+            double newArea = cv::contourArea(contours.at(j));
+            if (newArea > maxArea) {
+                maxArea = newArea;
+                maxAreaContourId = j;
+            } // End if
+        } // End for
+        return maxAreaContourId;
+    } // End function
 
     void
     CBallFinder::work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls)
@@ -41,34 +59,57 @@ namespace bf
         erode(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
         dilate(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
 
-        std::vector< std::vector<cv::Point> >  cnts;
-        findContours(m_maskImage.clone(), cnts, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        std::vector< std::vector<cv::Point> >  contours;
+        findContours(m_maskImage.clone(), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-        if(cnts.size() > 0) 
+        std::vector<cv::Point2f> centers;
+        float radius;
+
+        std::vector<cv::Point> contour;
+
+        if(contours.size() > 0) 
         {
+            int id;
+            while(contours.size() > 0)
+            {
+                id = getMaxAreaContourId(contours);
+                if(!(id < 0))
+                {
+                    contour = contours.at(id);
+                    minEnclosingCircle(contour, centers.at(id), radius);
+                    cv::Moments moment = moments(contour);
+                    cv::Point2f center;
+                    center.x = moment.m10/moment.m00;
+                    center.y = moment.m01/moment.m00;
+                    centers.push_back(center);
+                    if((radius > 20) && (radius < 200))
+                    {
+                        bf::CFoundBalls ball;
+                        ball.angle = 0.f;
+                        ball.distance = 0.f;
+                        ball.center = center;
+                        f_listOfBalls.push_back(ball);
+                    }
+                }
+                contours.erase(contours.begin() + id);
+            }             
             /*
-            c = max(cnts, key=cv2.contourArea)
-            ((x, y), radius) = cv2.minEnclosingCircle(c)
-            M = cv2.moments(c)
+            for i in range(len(cnts)):
+            moments = cv2.moments(cnts[i])
+            center.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
+            if(radius > 20 and radius < 200):
+                #cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 0), 2)
+                #cv2.boundingRect(frame, (int(x), int(y)), int(radius),(0, 255,), 2)
+                cv2.circle(frame, center[-1], 5, (0, 0, 255), -1)
+                print("CENTER OF BALL IS: ", center)
             */ 
         } 
         else 
         {
-            // Target Not Found
+            f_listOfBalls.clear(); // Target Not Found
         }
 
 
     }
-
-    std::vector< std::vector<cv::Point> >
-    grab_contours(std::vector< std::vector<cv::Point> > f_cnts)
-    {
-        return f_cnts; // TODO implement 
-    }
-
-
-
-
-
 
 }

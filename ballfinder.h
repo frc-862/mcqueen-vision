@@ -22,10 +22,11 @@ namespace bf
     struct CFoundBalls
     {
         CFoundBalls():
-            angle(0.f), distance(0.f){}
+            angle(0.f), distance(0.f), center(){}
 
         double angle;
         double distance;
+        cv::Point2f center;
     };
 
     typedef std::vector<CFoundBalls> ballList_t;
@@ -34,14 +35,14 @@ namespace bf
     {
         public:
             CBallFinder();
+            int getMaxAreaContourId(std::vector< std::vector<cv::Point> > contours);
             void work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls);
 
         private:
-            std::vector< std::vector<cv::Point> > grab_contours(std::vector< std::vector<cv::Point> > f_cnts);
+            std::vector< std::vector<cv::Point> > grab_contours(std::vector< std::vector<cv::Point> > f_contours);
             cv::Mat m_hsvImage;
             cv::Mat m_maskImage;
             cv::Mat m_blurredImage;    
-
 
     };
 
