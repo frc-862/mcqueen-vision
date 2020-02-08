@@ -39,7 +39,6 @@ namespace bf
             void work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls);
 
         private:
-            std::vector< std::vector<cv::Point> > grab_contours(std::vector< std::vector<cv::Point> > f_contours);
             cv::Mat m_hsvImage;
             cv::Mat m_maskImage;
             cv::Mat m_blurredImage;    

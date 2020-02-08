@@ -6,6 +6,9 @@ const int iCols = 640;
 const int iYellowThresholdsLower[] = {25, 100, 100};
 const int iYellowThresholdUpper[] = {70, 255, 255};
 
+const float fMinDetectedRadius = 20.f;
+const float fMaxDetectedRadius = 200.f;
+
 
 using namespace cv;
 using namespace std;
@@ -19,12 +22,6 @@ namespace bf
         m_blurredImage = cv::Mat(iRows, iCols, CV_8UC3);
         m_maskImage  = cv::Mat(iRows, iCols, CV_8UC1);
 
-    }
-
-    std::vector< std::vector<cv::Point> >
-    CBallFinder::grab_contours(std::vector< std::vector<cv::Point> > f_contours)
-    {
-        return f_contours; // TODO implement 
     }
 
     int 
@@ -82,7 +79,7 @@ namespace bf
                     center.x = moment.m10/moment.m00;
                     center.y = moment.m01/moment.m00;
                     centers.push_back(center);
-                    if((radius > 20) && (radius < 200))
+                    if((radius > fMinDetectedRadius) && (radius < fMaxDetectedRadius))
                     {
                         bf::CFoundBalls ball;
                         ball.angle = 0.f;
