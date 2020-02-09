@@ -89,17 +89,7 @@ namespace bf
                     }
                 }
                 contours.erase(contours.begin() + id);
-            }             
-            /*
-            for i in range(len(cnts)):
-            moments = cv2.moments(cnts[i])
-            center.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
-            if(radius > 20 and radius < 200):
-                #cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 0), 2)
-                #cv2.boundingRect(frame, (int(x), int(y)), int(radius),(0, 255,), 2)
-                cv2.circle(frame, center[-1], 5, (0, 0, 255), -1)
-                print("CENTER OF BALL IS: ", center)
-            */ 
+            }       
         } 
         else 
         {

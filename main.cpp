@@ -355,19 +355,26 @@ std::string image_name(int index, std::string prefix = "image", std::string suff
 }
 
 int main(int argc, char* argv[]) {
+
+    std::cout << "\n################# APPLICATION RUNNING #################\n" << std::endl;
+
     if (argc >= 2) configFile = argv[1];
 
     // read configuration
+    std::cout << "Reading Config File" << std::endl;
     if (!ReadConfig()) return EXIT_FAILURE;
+    std::cout << "Config File Read Successfully" << std::endl;
 
     // start NetworkTables
     auto ntinst = nt::NetworkTableInstance::GetDefault();
     if (server) {
         wpi::outs() << "Setting up NetworkTables server\n";
         ntinst.StartServer();
+        std::cout << "Server Set Up Successfully" << std::endl;
     } else {
         wpi::outs() << "Setting up NetworkTables client for team " << team << '\n';
         ntinst.StartClientTeam(team);
+        std::cout << "Client Set Up Successfully" << std::endl;
     }
 
     // start cameras
@@ -376,6 +383,8 @@ int main(int argc, char* argv[]) {
 
     // start switched cameras
     for (const auto& config : switchedCameraConfigs) StartSwitchedCamera(config);
+
+    std::cout << "Cameras Started Successfully" << std::endl;
 
     // start image processing on camera 0 if present
     int x, y, height, count;
@@ -387,9 +396,11 @@ int main(int argc, char* argv[]) {
     if (debug) {
       source = frc::CameraServer::GetInstance()->PutVideo("debug", 640, 480);
       fout = frc::CameraServer::GetInstance()->PutVideo("fout", 640, 480);
+      std::cout << "Debug Output Set" << std::endl;
     }
  
     if (cameras.size() >= 1) {
+        std::cout << "Creating Target Pipeline and Logging" << std::endl;
         std::thread([&] {
             bool log_images = fs::exists("/mnt/log/img");
             int counter = 0;
@@ -476,7 +487,8 @@ int main(int argc, char* argv[]) {
             });
 
             runner.RunForever();
-        }).detach();
+        }).detach();        
+        std::cout << "Target Pipeline Detached" << std::endl;
 
         std::thread([] {
             const fs::path log_path("/mnt/log/img");
@@ -511,16 +523,25 @@ int main(int argc, char* argv[]) {
             }
 
         }).detach();
+        std::cout << "Logging Detached" << std::endl;
     }
 
-    if (cameras.size() >= 2) {
+    if (false) {
+    // if (cameras.size() >= 2) {
+        std::cout << "Creating Ball Pipeline" << std::endl;
         std::thread([&] {
             auto ntab = ntinst.GetTable("SmartDashboard");
 
             frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
             [&](BallPipeline &pipeline) {
+                // TODO reference work - pass images
             });
+
+            runner.RunForever();
         }).detach();
+        std::cout << "Ball Pipeline Detached" << std::endl;
     }
+    for(;;); // TODO there is probably a better way to do this ... oh well
+    std::cout << "\n################# MAIN THREAD TERMINATING #################\n" << std::endl;
 }
 
