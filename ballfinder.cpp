@@ -3,8 +3,8 @@
 const int iRows = 480;
 const int iCols = 640;
 
-const int iYellowThresholdsLower[] = {25, 100, 100};
-const int iYellowThresholdUpper[] = {70, 255, 255};
+const cv::InputArray iYellowThresholdsLower = cv::Scalar(25, 100, 100);
+const cv::InputArray iYellowThresholdsUpper = cv::Scalar(70, 255, 255);
 
 const float fMinDetectedRadius = 20.f;
 const float fMaxDetectedRadius = 200.f;
@@ -46,7 +46,7 @@ namespace bf
         GaussianBlur(f_imgIn, m_blurredImage, cv::Size(11,11),0);
         cvtColor(m_blurredImage, m_hsvImage, COLOR_BGR2HSV);
 
-        inRange(m_hsvImage, (cv::InputArray) iYellowThresholdsLower, (cv::InputArray) iYellowThresholdUpper, m_maskImage);
+        inRange(m_hsvImage, iYellowThresholdsLower, iYellowThresholdsUpper, m_maskImage);
 
         cv::Mat cvErodeKernel;
         cv::Point cvErodeAnchor(-1, -1);

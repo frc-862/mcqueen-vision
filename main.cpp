@@ -299,11 +299,17 @@ public:
   void Process(cv::Mat& mat) {
     bf::ballList_t result;    
     finder.work(mat, result);
-    std::cout << "Found " << result.size() << " balls." << std::endl;
+    numBalls = result.size();
+    if(prevNumBalls != numBalls) {
+        prevNumBalls = numBalls;
+        std::cout << "Found " << numBalls << " balls." << std::endl;
+    }
   }
 
-private:
+private: 
   bf::CBallFinder finder;
+  size_t prevNumBalls = -1;
+  size_t numBalls;
 };
 
 class Pipeline : public grip::InfiniteRecharge {
@@ -526,8 +532,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Logging Detached" << std::endl;
     }
 
-    if (false) {
-    // if (cameras.size() >= 2) {
+    // if (false) {
+    if (cameras.size() >= 2) {
         std::cout << "Creating Ball Pipeline" << std::endl;
         std::thread([&] {
             auto ntab = ntinst.GetTable("SmartDashboard");
