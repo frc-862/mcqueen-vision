@@ -297,19 +297,21 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
 class BallPipeline {
 public:
   void Process(cv::Mat& mat) {
-    bf::ballList_t result;    
+    bf::ballList_t result;
+
+#if 1    
     finder.work(mat, result);
-    numBalls = result.size();
-    if(prevNumBalls != numBalls) {
-        prevNumBalls = numBalls;
-        std::cout << "Found " << numBalls << " balls." << std::endl;
-    }
+#else
+    result.clear();
+#endif
+
+    if((i % 50) == 0) std::cout << "Found " << result.size() << " balls." << std::endl;
+    ++i;
   }
 
 private: 
   bf::CBallFinder finder;
-  size_t prevNumBalls = -1;
-  size_t numBalls;
+  int i = 0;
 };
 
 class Pipeline : public grip::InfiniteRecharge {
@@ -539,9 +541,7 @@ int main(int argc, char* argv[]) {
             auto ntab = ntinst.GetTable("SmartDashboard");
 
             frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
-            [&](BallPipeline &pipeline) {
-                // TODO reference work - pass images
-            });
+            [&](BallPipeline &pipeline) {});
 
             runner.RunForever();
         }).detach();

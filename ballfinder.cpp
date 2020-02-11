@@ -1,10 +1,13 @@
 #include "ballfinder.h"
 
+
 const int iRows = 480;
 const int iCols = 640;
 
-const cv::InputArray iYellowThresholdsLower = cv::Scalar(25, 100, 100);
-const cv::InputArray iYellowThresholdsUpper = cv::Scalar(70, 255, 255);
+
+const cv::Scalar iYellowThresholdsLower = cv::Scalar(15, 100, 100);  // cv::Scalar(25, 100, 100);
+const cv::Scalar iYellowThresholdsUpper = cv::Scalar(90, 255, 255);  // cv::Scalar(70, 255, 255);
+
 
 const float fMinDetectedRadius = 20.f;
 const float fMaxDetectedRadius = 200.f;
@@ -41,6 +44,7 @@ namespace bf
     void
     CBallFinder::work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls)
     {
+        // std::cout << "work" << endl;
 
         //here is the main part of the code
         GaussianBlur(f_imgIn, m_blurredImage, cv::Size(11,11),0);
@@ -48,21 +52,22 @@ namespace bf
 
         inRange(m_hsvImage, iYellowThresholdsLower, iYellowThresholdsUpper, m_maskImage);
 
+        m_maskImage = 255 * m_maskImage;
+
         cv::Mat cvErodeKernel;
         cv::Point cvErodeAnchor(-1, -1);
-        //double cvErodeIterations = 1.0;  // default Double
-        //int cvErodeBordertype = cv::BORDER_CONSTANT;
 
         erode(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
         dilate(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
 
         std::vector< std::vector<cv::Point> >  contours;
-        findContours(m_maskImage.clone(), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        findContours(m_maskImage, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); // m_maskImage.clone() ???
 
         std::vector<cv::Point2f> centers;
         float radius;
 
         std::vector<cv::Point> contour;
+        // std::cout << "Me Got " << contours.size() << " contours" << std::endl;
 
         if(contours.size() > 0) 
         {
@@ -73,11 +78,8 @@ namespace bf
                 if(!(id < 0))
                 {
                     contour = contours.at(id);
-                    minEnclosingCircle(contour, centers.at(id), radius);
-                    cv::Moments moment = moments(contour);
                     cv::Point2f center;
-                    center.x = moment.m10/moment.m00;
-                    center.y = moment.m01/moment.m00;
+                    minEnclosingCircle(contour, center, radius);
                     centers.push_back(center);
                     if((radius > fMinDetectedRadius) && (radius < fMaxDetectedRadius))
                     {
