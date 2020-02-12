@@ -5,8 +5,8 @@ const int iRows = 480;
 const int iCols = 640;
 
 
-const cv::Scalar iYellowThresholdsLower = cv::Scalar(15, 100, 100);  // cv::Scalar(25, 100, 100);
-const cv::Scalar iYellowThresholdsUpper = cv::Scalar(90, 255, 255);  // cv::Scalar(70, 255, 255);
+const cv::Scalar iYellowThresholdsLower = cv::Scalar(15, 100, 100); 
+const cv::Scalar iYellowThresholdsUpper = cv::Scalar(90, 255, 255); 
 
 
 const float fMinDetectedRadius = 20.f;

@@ -7,4 +7,12 @@ lightningVision
 *.orig
 build
 ballfinder.py
+*.user
+*.pdb
+*.exp
+*.dir
+*.suo
+*.db
+*.opendb
+*.ipch
 
