@@ -24,7 +24,7 @@ namespace bf
         m_hsvImage = cv::Mat(iRows, iCols, CV_8UC3);
         m_blurredImage = cv::Mat(iRows, iCols, CV_8UC3);
         m_maskImage  = cv::Mat(iRows, iCols, CV_8UC1);
-        namedWindow("intermed", 1);
+        namedWindow("ballBinary", 1);
 
     }
 
@@ -61,7 +61,7 @@ namespace bf
         erode(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
         dilate(m_maskImage, m_maskImage, cvErodeKernel, cvErodeAnchor, 5);
 
-        imshow("intermed", m_maskImage);
+        imshow("ballBinary", m_maskImage);
 
         std::vector< std::vector<cv::Point> >  contours;
         findContours(m_maskImage, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); 

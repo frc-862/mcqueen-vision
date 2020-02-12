@@ -502,7 +502,7 @@ int main(int argc, char* argv[]) {
             const fs::path log_path("/mnt/log/img");
             bool log_images = fs::exists(log_path);
             int index = 1;
-            if (log_images) {
+            if (log_images) { 
                 std::cerr << "Logging Images\n";
 
                 for (auto& p : fs::directory_iterator(log_path)) {

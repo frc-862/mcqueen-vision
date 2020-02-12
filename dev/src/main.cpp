@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string>
 #include "ballfinder.h"
+#include "InfiniteRecharge.h"
+#include "targetfinder.h"
 
 using namespace std;
 using namespace cv;
@@ -19,51 +21,13 @@ static void help()
             "./segment_objects [video file, else it reads camera 0]\n\n");
 }
 
-static void refineSegments(const Mat& img, Mat& mask, Mat& dst)
-{
-    int niters = 3;
-
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-
-    Mat temp;
-
-    dilate(mask, temp, Mat(), Point(-1,-1), niters);
-    erode(temp, temp, Mat(), Point(-1,-1), niters*2);
-    dilate(temp, temp, Mat(), Point(-1,-1), niters);
-
-    findContours( temp, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE );
-
-    dst = Mat::zeros(img.size(), CV_8UC3);
-
-    if( contours.size() == 0 )
-        return;
-
-    // iterate through all the top-level contours,
-    // draw each connected component with its own random color
-    int idx = 0, largestComp = 0;
-    double maxArea = 0;
-
-    for( ; idx >= 0; idx = hierarchy[idx][0] )
-    {
-        const vector<Point>& c = contours[idx];
-        double area = fabs(contourArea(Mat(c)));
-        if( area > maxArea )
-        {
-            maxArea = area;
-            largestComp = idx;
-        }
-    }
-    Scalar color( 0, 0, 255 );
-    drawContours( dst, contours, largestComp, color, FILLED, LINE_8, hierarchy );
-}
-
-
 int main(int argc, char** argv)
 {
     VideoCapture cap;
     bool update_bg_model = true;
     bf::CBallFinder finder;
+	tf::CTargetFinder tFinder;
+	grip::InfiniteRecharge gripPipeline;
 
     CommandLineParser parser(argc, argv, "{help h||}{@input||}");
     if (parser.has("help"))
@@ -93,7 +57,7 @@ int main(int argc, char** argv)
     }
 
     namedWindow("video", 1);
-    namedWindow("filtered", 1);
+    namedWindow("targetPipeline", 1);
     
     for(;;)
     {
@@ -105,19 +69,21 @@ int main(int argc, char** argv)
 
 
         bf::ballList_t balls;
+		tf::targetList_t targets;
 
 
         finder.work(tmp_frame, balls);
 
+		gripPipeline.Process(tmp_frame);
+		tFinder.work(tmp_frame, * gripPipeline.GetFindContoursOutput(), targets);
+		
+		// imshow("targetPipeline", * gripPipeline.GetHsvThresholdOutput());
 
-
-
-      //  out_frame = tmp_frame;
 
         /////////////////////////////////////////////////////////////////////////////
 
         imshow("video", tmp_frame);
-      //  imshow("filtered", out_frame);
+
         char keycode = (char)waitKey(30);
         if( keycode == 27 )
             break;
