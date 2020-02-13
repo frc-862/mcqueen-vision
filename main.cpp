@@ -24,6 +24,7 @@
 #include "InfiniteRecharge.h"
 #include "ballfinder.h"
 #include "safe_queue.h"
+#include "pipeline.h"
 
 namespace fs = std::filesystem;
 
@@ -305,7 +306,7 @@ public:
     result.clear();
 #endif
 
-    if((i % 50) == 0) std::cout << "Found " << result.size() << " balls." << std::endl;
+    // if((i % 50) == 0) std::cout << "Found " << result.size() << " balls." << std::endl;
     ++i;
   }
 
@@ -314,35 +315,7 @@ private:
   int i = 0;
 };
 
-class Pipeline : public grip::InfiniteRecharge {
-public:
-    Pipeline() { }
 
-    void Process(cv::Mat& mat) override {
-      auto start = std::chrono::steady_clock::now();
-      source = mat;
-      grip::InfiniteRecharge::Process(mat);
-      auto end = std::chrono::steady_clock::now();
-      elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    }
-
-		cv::Mat* GetSource() {
-	    return &(this->source);
-    }
-
-    cv::Mat* GetMasked() {
-      return GetCvErodeOutput();
-    }
-
-		std::vector<std::vector<cv::Point> >* GetContours() {
-      return GetFilterContoursOutput();
-    }
-
-    unsigned long GetDuration() { return elapsed; }
-private:
-		cv::Mat source;
-    double elapsed;
-};
 }  // namespace
 
 std::string meta_data_name(int index, std::string path, const ImageInfo& info, std::string suffix = ".json") {
@@ -451,31 +424,19 @@ int main(int argc, char* argv[]) {
 
                 ntab->PutNumber("VisionFound", count);
 
-                if (smooth.size() < 1) {
+                cv::Rect target;
+
+                if (pipeline.findBestTarget(target)) {
                     ntab->PutNumber("VisionX", x = 0);
                     ntab->PutNumber("VisionY", y = 0);
                     ntab->PutNumber("VisionHeight", 0);
                     ntab->PutNumber("VisionDelay", pipeline.GetDuration());
 
                 } else {
-                    // would rather use std::max_element; however we would recalc
-                    // boundingRect too often, mapping to boundingRect first would
-                    // waste memory and use extra ram, so we do it by hand
-                    //
-                    // TODO: Use height of bounding box, as a ratio to height of 
-                    // contour to filter
-                    cv::Rect largest(0,0,0,0);
-                    for (const auto object : smooth) {
-                        auto rect = cv::boundingRect(object);
-                        if (rect.area() > largest.area()) {
-                            largest = rect;
-                        }
-                    }
-
-                    const auto center = (largest.br() + largest.tl()) / 2;
+                    const auto center = (target.br() + target.tl()) / 2;
                     x = center.x - halfWidth;
                     y = halfHeight - center.y;
-                    height = largest.height;
+                    height = target.height;
 
                     ntab->PutNumber("VisionX", x);
                     ntab->PutNumber("VisionY", y);

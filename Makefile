@@ -15,7 +15,7 @@ install: build
 clean:
 	rm ${EXE} *.o
 
-main.o: main.cpp safe_queue.h InfiniteRecharge.h ballfinder.h
+main.o: main.cpp safe_queue.h InfiniteRecharge.h ballfinder.h pipeline.h
 
 OBJS=main.o InfiniteRecharge.o ballfinder.o
 

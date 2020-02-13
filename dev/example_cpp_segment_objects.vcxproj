@@ -191,7 +191,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="src\ballfinder.cpp" />
     <ClCompile Include="src\InfiniteRecharge.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\targetfinder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:\Users\edurso\opencv\opencv\build\bin\sample\ZERO_CHECK.vcxproj">
@@ -266,9 +265,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\pipeline.h" />
     <ClInclude Include="src\ballfinder.h" />
     <ClInclude Include="src\InfiniteRecharge.h" />
-    <ClInclude Include="src\targetfinder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

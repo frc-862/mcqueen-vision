@@ -6,7 +6,7 @@
 #include <string>
 #include "ballfinder.h"
 #include "InfiniteRecharge.h"
-#include "targetfinder.h"
+#include "../../mcqueen-vision/pipeline.h"
 
 using namespace std;
 using namespace cv;
@@ -26,7 +26,6 @@ int main(int argc, char** argv)
     VideoCapture cap;
     bool update_bg_model = true;
     bf::CBallFinder finder;
-	tf::CTargetFinder tFinder;
 	grip::InfiniteRecharge gripPipeline;
 
     CommandLineParser parser(argc, argv, "{help h||}{@input||}");
@@ -36,9 +35,11 @@ int main(int argc, char** argv)
         return 0;
     }
     string input = parser.get<std::string>("@input");
-    if (input.empty())
-        cap.open(0);
-    else
+	if (input.empty()) {
+		cap.open(1);
+		// if (argc == 1) cap.open(std::stoi(argv));
+	}
+	else
         cap.open(samples::findFileOrKeep(input));
 
     if( !cap.isOpened() )
@@ -67,18 +68,9 @@ int main(int argc, char** argv)
 
         /////////////////////////////////////////////////////////////////////////////
 
-
         bf::ballList_t balls;
-		tf::targetList_t targets;
-
 
         finder.work(tmp_frame, balls);
-
-		gripPipeline.Process(tmp_frame);
-		tFinder.work(tmp_frame, * gripPipeline.GetFindContoursOutput(), targets);
-		
-		// imshow("targetPipeline", * gripPipeline.GetHsvThresholdOutput());
-
 
         /////////////////////////////////////////////////////////////////////////////
 
