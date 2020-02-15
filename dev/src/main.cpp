@@ -23,10 +23,12 @@ static void help()
 
 int main(int argc, char** argv)
 {
+	bool video = true;
     VideoCapture cap;
     bool update_bg_model = true;
     bf::CBallFinder finder;
 	grip::InfiniteRecharge gripPipeline;
+	tf::Pipeline pipeline;
 
     CommandLineParser parser(argc, argv, "{help h||}{@input||}");
     if (parser.has("help"))
@@ -36,11 +38,14 @@ int main(int argc, char** argv)
     }
     string input = parser.get<std::string>("@input");
 	if (input.empty()) {
-		cap.open(1);
-		// if (argc == 1) cap.open(std::stoi(argv));
+		cap.open(0);
+		// cap.open(1);
 	}
 	else
-        cap.open(samples::findFileOrKeep(input));
+	{
+		cap.open(samples::findFileOrKeep(input));
+		video = false; // C:\Users\edurso\frc\_2020_robotcode\imageTarget25ft.jpg
+	}
 
     if( !cap.isOpened() )
     {
@@ -57,24 +62,37 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    namedWindow("video", 1);
-    namedWindow("targetPipeline", 1);
+    namedWindow("stream", 1);
     
     for(;;)
     {
-        cap >> tmp_frame;
+		if (video) {
+			cap >> tmp_frame;
+		}
         if( tmp_frame.empty() )
             break;
 
         /////////////////////////////////////////////////////////////////////////////
 
         bf::ballList_t balls;
-
         finder.work(tmp_frame, balls);
+
+		// cv::Rect target;
+		tf::Target target;
+		pipeline.Process(tmp_frame);
+		if (pipeline.findBestTarget(target)) {
+			std::cout << "##### Target Acquired #####\n"
+				<< "(X,Y)-> (" << target.center.x << " , " << target.center.y << ")\n"
+				<< "Width-> " << target.width << "\n"
+				<< "Height-> " << target.height << "\n"
+				<< "Angle-> " << target.angle << "\n"
+				<< "Distance-> " << target.distance
+				<< std::endl;
+		}
 
         /////////////////////////////////////////////////////////////////////////////
 
-        imshow("video", tmp_frame);
+        imshow("stream", tmp_frame);
 
         char keycode = (char)waitKey(30);
         if( keycode == 27 )

@@ -19,6 +19,11 @@ const float fBallHeight = 7.f; // 2.5 for small balls
 const float fMinDetectedRadius = 20.f;
 const float fMaxDetectedRadius = 200.f;
 
+//! Camera Specific Values
+const float focalLength = 3.67f;
+const float pixelSize = 0.00398f;
+const float focal = focalLength / pixelSize;
+
 
 using namespace cv;
 using namespace std;
@@ -26,7 +31,7 @@ using namespace std;
 namespace bf
 {
 
-    CBallFinder::CBallFinder() { }
+	CBallFinder::CBallFinder() { }
 
     int 
     CBallFinder::getMaxAreaContourId(std::vector< std::vector<cv::Point> > contours) {
@@ -93,9 +98,7 @@ namespace bf
 						ball.distance = ((fBallHeight / (tan((2 * radius) * (fFieldOfViewVertRad / m_maskImage.rows)))) / 12);
 
 						float centerCamX = m_maskImage.cols / 2.f;
-						float focalLength = 3.67f;
-						float pixelSize = 0.00398f;
-						float focal = focalLength / pixelSize;
+						
 						float angleRad = atan((ball.center.x - centerCamX) / focal);
 						ball.angle = (-(angleRad * (180.f / M_PI)));
 

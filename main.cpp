@@ -297,22 +297,14 @@ cs::MjpegServer StartSwitchedCamera(const SwitchedCameraConfig& config) {
 // wrapper pipeline
 class BallPipeline {
 public:
-  void Process(cv::Mat& mat) {
     bf::ballList_t result;
-
-#if 1    
-    finder.work(mat, result);
-#else
-    result.clear();
-#endif
-
-    // if((i % 50) == 0) std::cout << "Found " << result.size() << " balls." << std::endl;
-    ++i;
-  }
+    void Process(cv::Mat& mat) {
+        finder.work(mat, result);
+    }
 
 private: 
-  bf::CBallFinder finder;
-  int i = 0;
+    bf::CBallFinder finder;
+    int i = 0;
 };
 
 
@@ -387,28 +379,14 @@ int main(int argc, char* argv[]) {
             int counter = 0;
             auto ntab = ntinst.GetTable("SmartDashboard");
 
-            frc::VisionRunner<Pipeline> runner(cameras[0], new Pipeline(),
-            [&](Pipeline &pipeline) {
+            frc::VisionRunner<tf::Pipeline> runner(cameras[0], new tf::Pipeline(),
+            [&](tf::Pipeline &pipeline) {
                 auto start = std::chrono::steady_clock::now();
-                //
+
                 // do something with pipeline results
                 const auto& contours = *pipeline.GetContours();
                 if (debug) source.PutFrame(*pipeline.GetMasked());
 
-                // smooth the contours (bug before was that 
-                // approxPolyDP takes a single contour, not
-                // a vector of contours
-
-								//std::vector<std::vector<cv::Point> > smooth;
-                //try {
-                //for (const auto& contour : contours) {
-										//std::vector<cv::Point> scontour;
-                    //cv::approxPolyDP(contour, smooth, 3, true);
-                    //smooth.push_back(scontour);
-                //}
-                //} catch (cv::Exception& err) {
-                  //std::cerr << "Error processing approxPolyDP: " << err.what() << std::endl; 
-                //}
                 auto& smooth = contours;
                 count = smooth.size();
 
@@ -424,32 +402,49 @@ int main(int argc, char* argv[]) {
 
                 ntab->PutNumber("VisionFound", count);
 
-                cv::Rect target;
+                tf::Target target;
 
-                if (pipeline.findBestTarget(target)) {
+                //if (pipeline.findBestTarget(target)) {
+                if (!pipeline.findBestTarget(target)) {
                     ntab->PutNumber("VisionX", x = 0);
                     ntab->PutNumber("VisionY", y = 0);
                     ntab->PutNumber("VisionHeight", 0);
+                    ntab->PutNumber("VisionDistance", 0);
+                    ntab->PutNumber("VisionAngle", 0);
                     ntab->PutNumber("VisionDelay", pipeline.GetDuration());
 
                 } else {
-                    const auto center = (target.br() + target.tl()) / 2;
-                    x = center.x - halfWidth;
-                    y = halfHeight - center.y;
-                    height = target.height;
+                    // const auto center = target.center;
+                    // x = center.x - halfWidth;
+                    // y = halfHeight - center.y;
+                    // height = target.height;
 
-                    ntab->PutNumber("VisionX", x);
-                    ntab->PutNumber("VisionY", y);
-                    ntab->PutNumber("VisionHeight", height);
+                    ntab->PutNumber("VisionX", target.center.x);
+                    ntab->PutNumber("VisionY", target.center.y);
+                    ntab->PutNumber("VisionHeight", target.height);
+                    ntab->PutNumber("VisionDistance", target.distance);
+                    ntab->PutNumber("VisionAngle", target.angle);
                     ntab->PutNumber("VisionDelay", pipeline.GetDuration() + elapsed);
                 }
 
-                if (log_images && (counter++ % 90) == 0) {
+                counter++;
+                if ((counter % 90) && log_images == 0) {
                     ImageInfo info = { "src", x, y, height, smooth.size() };
                     loggingQueue.push(std::make_pair(*pipeline.GetSource(), info));
                     ImageInfo info2 = { "mask", x, y, height, smooth.size() };
                     loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
                 }
+
+                if(counter % 20 == 0){
+                    std::cout << counter << "\n##### Target Acquired #####\n"
+				        << "(X,Y)-> (" << target.center.x << " , " << target.center.y << ")\n"
+				        << "Width-> " << target.width << "\n"
+				        << "Height-> " << target.height << "\n"
+				        << "Angle-> " << target.angle << "\n"
+				        << "Distance-> " << target.distance
+				        << std::endl;
+                }
+                
 
                 auto end = std::chrono::steady_clock::now();
                 elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
@@ -502,7 +497,21 @@ int main(int argc, char* argv[]) {
             auto ntab = ntinst.GetTable("SmartDashboard");
 
             frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
-            [&](BallPipeline &pipeline) {});
+            [&](BallPipeline &pipeline) {
+                if(pipeline.result.empty()){
+                    ntab->PutNumber("NumBalls", 0);
+                    ntab->PutNumber("ClosestBallCenterX", 0);
+                    ntab->PutNumber("ClosestBallCenterY", 0);
+                    ntab->PutNumber("ClosestBallAngle", 0);
+                    ntab->PutNumber("ClosestBallDistance", 0);
+                } else {
+                    ntab->PutNumber("NumBalls", pipeline.result.size());
+                    ntab->PutNumber("ClosestBallCenterX", pipeline.result.at(0).center.x);
+                    ntab->PutNumber("ClosestBallCenterY", pipeline.result.at(0).center.x);
+                    ntab->PutNumber("ClosestBallAngle", pipeline.result.at(0).angle);
+                    ntab->PutNumber("ClosestBallDistance", pipeline.result.at(0).distance);
+                }  
+            });
 
             runner.RunForever();
         }).detach();
