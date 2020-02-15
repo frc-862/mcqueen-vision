@@ -8,15 +8,20 @@
 #include <cmath>
 #include "math.h"
 
-const float fFieldOfViewVertRad = 43.30 * (M_PI / 180.f);
-const float fFieldOfViewHorizRad = 70.42 * (M_PI / 180.f);
+float fFieldOfViewVertRad = 43.30 * (M_PI / 180.f);
+float fFieldOfViewHorizRad = 70.42 * (M_PI / 180.f);
 
-const float fTargetHeightIn = 17.f;
-const float fTargetWidthIn = 39.25f;
-const float fTargetAspectRatioHeightOverWidth = fTargetHeightIn / fTargetWidthIn;
-const float fTargetHeightRatio = 1.f; // TODO make a right number
-const float fTargetRatioThreshold = 100.f; // TODO make a right number
-const float fTargetDistanceThreshold = 0.5f;
+float fTargetHeightRatio = 1.f; // TODO make a right number
+float fTargetRatioThreshold = 100.f; // TODO make a right number
+float fTargetDistanceThreshold = 0.5f;
+
+float fTargetHeight_a = 0.0084f;
+float fTargetHeight_b = -1.4737f;
+float fTargetHeight_c = 76.27f;
+
+float fTargetRow_a = -0.0056f;
+float fTargetRow_b = 4.4264f;
+float fTargetRow_c = -832.33f;
 
 namespace tf
 {
@@ -65,24 +70,19 @@ namespace tf
 		{
 			// distance = a(height^2) + b(height) + c
 			// a, b, and c are constants derived from images at distances
-			float a = 0.0084f;
-			float b = -1.4737f;
-			float c = 76.27f;
-			return ((a * f_targetHeight * f_targetHeight) + (b * f_targetHeight) + c);
+			return ((fTargetHeight_a * f_targetHeight * f_targetHeight) + (fTargetHeight_b * f_targetHeight) + fTargetHeight_c);
 		}
 
 		float getInterpolatedDistanceFromTargetRow(float f_targetRow)
 		{
 			// distance = a(height^2) + b(height) + c
 			// a, b, and c are constants derived from images at distances
-			float a = -0.0056f;
-			float b = 4.4264f;
-			float c = -832.33f;
-			return ((a * f_targetRow * f_targetRow) + (b * f_targetRow) + c);
+			return ((fTargetRow_a * f_targetRow * f_targetRow) + (fTargetRow_b * f_targetRow) + fTargetRow_c);
 		}
 
 		float getAngleFromTarget(tf::Target f_target, int cols)
 		{
+            // Returns a number in degrees
 			// Positive angle - right turn
 			// Negative angle - left turn
 			return (((f_target.center.x - (cols / 2)) / cols) * fFieldOfViewHorizRad) * (180.f / M_PI);
@@ -98,6 +98,22 @@ namespace tf
 			return true; // Disable to implement for testing
 			// return (std::abs(dist1 - dist2) < fTargetDistanceThreshold);
 		}
+        
+        void setConstants(float f_fieldOfViewVert, float f_fieldOfViewHoriz, float f_targetHeightRatio, 
+                            float f_targetRatioThreshold, float f_targetDistanceThreshold, float f_targetHeight_a,
+                            float f_targetHeight_b, float f_targetHeight_c, float f_targetRow_a, float f_targetRow_b, float f_targetRow_c) {
+            fFieldOfViewHorizRad = f_fieldOfViewHoriz * (M_PI / 180.f);
+            fFieldOfViewVertRad = f_fieldOfViewVert * (M_PI / 180.f);
+            fTargetHeightRatio = f_targetHeightRatio;
+            fTargetRatioThreshold = f_targetRatioThreshold;
+            fTargetDistanceThreshold = f_targetDistanceThreshold;
+            fTargetHeight_a = f_targetHeight_a;
+            fTargetHeight_b = f_targetHeight_b;
+            fTargetHeight_c = f_targetHeight_c;
+            fTargetRow_a = f_targetRow_a;
+            fTargetRow_b = f_targetRow_b;
+            fTargetRow_c = f_targetRow_c;
+        }
 
 		// would rather use std::max_element; however we would recalc
 		// boundingRect too often, mapping to boundingRect first would
@@ -115,14 +131,12 @@ namespace tf
 			for (const auto object : *contours) {
 				auto rect = cv::boundingRect(object);
 				if ((rect.area() > target.area())) {
-					// target = rect;
 					tf::Target temp;
 					temp.height = rect.height;
 					temp.center.x = (rect.x + (rect.width / 2));
 					temp.center.y = (rect.y + (rect.height / 2));
 					if (checkTargetProportion(temp)) {
 						float tempDist = getInterpolatedDistanceFromTargetHeight(temp.height);
-                        // std::cout << "Temp Distance-> " << tempDist << std::endl;
 						float tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
 						if (distancesInBounds(tempDist, tempDistTest)) {
 							target.distance = tempDist;

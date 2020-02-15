@@ -10,8 +10,8 @@ const int iRows = 480;
 const cv::Scalar iYellowThresholdsLower = cv::Scalar(20, 170, 100);// cv::Scalar(15, 100, 100); 
 const cv::Scalar iYellowThresholdsUpper = cv::Scalar(30, 255, 255);// cv::Scalar(90, 255, 255); 
 
-const float fFieldOfViewVertRad = 43.30 * (M_PI / 180.f);
-const float fFieldOfViewHorizRad = 70.42 * (M_PI / 180.f);
+const float fFieldOfViewVertRadians = 43.30 * (M_PI / 180.f);
+const float fFieldOfViewHorizRadians = 70.42 * (M_PI / 180.f);
 
 const float fBallHeight = 7.f; // 2.5 for small balls
 
@@ -97,7 +97,7 @@ namespace bf
 
 						ball.center = center;
 
-						ball.distance = ((fBallHeight / (tan((2 * radius) * (fFieldOfViewVertRad / m_maskImage.rows)))) / 12);
+						ball.distance = ((fBallHeight / (tan((2 * radius) * (fFieldOfViewVertRadians / m_maskImage.rows)))) / 12);
 
 						float centerCamX = m_maskImage.cols / 2.f;
 						

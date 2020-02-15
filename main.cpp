@@ -301,6 +301,14 @@ public:
     void Process(cv::Mat& mat) {
         finder.work(mat, result);
     }
+    void setConstants(int yellowLowerH, int yellowLowerS, int yellowLowerV,
+                        int yellowUpperH, int yellowUpperS, int yellowUpperV,
+                        float minDetectedRadius, float maxDetectedRadius, float fieldOfViewVert,
+                        float fieldOfViewHoriz, float focalLength, float pixelSize)
+    {
+        finder.setConstants(cv::Scalar(yellowLowerH, yellowLowerS, yellowLowerV), cv::Scalar(yellowUpperH, yellowUpperS, yellowUpperV), 
+                            minDetectedRadius, maxDetectedRadius, fieldOfViewVert, fieldOfViewHoriz, focalLength, pixelSize);
+    }
 
 private: 
     bf::CBallFinder finder;
@@ -381,6 +389,21 @@ int main(int argc, char* argv[]) {
 
             frc::VisionRunner<tf::Pipeline> runner(cameras[0], new tf::Pipeline(),
             [&](tf::Pipeline &pipeline) {
+
+                if(counter == 0) {
+                    ntab->PutNumber("FieldOfViewVert", 43.30f);
+                    ntab->PutNumber("FieldOfViewHoriz", 70.42f);
+                    ntab->PutNumber("TargetHeightRatio", 1.f);
+                    ntab->PutNumber("TargetRatioThreshold", 100.f);
+                    ntab->PutNumber("TargetDistanceThreshold", 0.5f);
+                    ntab->PutNumber("TargetHeightAConstant", 0.0084f);
+                    ntab->PutNumber("TargetHeightBConstant", -1.4737f);
+                    ntab->PutNumber("TargetHeightCConstant", 76.27f);
+                    ntab->PutNumber("TargetRowAConstant", -0.0056f);
+                    ntab->PutNumber("TargetRowBConstant", 4.4264f);
+                    ntab->PutNumber("TargetRowCConstant", -832.33f);
+                }
+
                 auto start = std::chrono::steady_clock::now();
 
                 // do something with pipeline results
@@ -435,7 +458,20 @@ int main(int argc, char* argv[]) {
                     loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
                 }
 
-                if(counter % 20 == 0){
+                if(counter % 90 == 0){ // Update about once a second
+                    pipeline.setConstants(
+                        ntab->GetNumber("FieldOfViewVert", 43.30f),
+                        ntab->GetNumber("FieldOfViewHoriz", 70.42f),
+                        ntab->GetNumber("TargetHeightRatio", 1.f),
+                        ntab->GetNumber("TargetRatioThreshold", 100.f),
+                        ntab->GetNumber("TargetDistanceThreshold", 0.5f),
+                        ntab->GetNumber("TargetHeightAConstant", 0.0084f),
+                        ntab->GetNumber("TargetHeightBConstant", -1.4737f),
+                        ntab->GetNumber("TargetHeightCConstant", 76.27f),
+                        ntab->GetNumber("TargetRowAConstant", -0.0056f),
+                        ntab->GetNumber("TargetRowBConstant", 4.4264f),
+                        ntab->GetNumber("TargetRowCConstant", -832.33f)
+                    );
                     std::cout << counter << "\n##### Target Acquired #####\n"
 				        << "(X,Y)-> (" << target.center.x << " , " << target.center.y << ")\n"
 				        << "Width-> " << target.width << "\n"
@@ -490,14 +526,45 @@ int main(int argc, char* argv[]) {
         std::cout << "Logging Detached" << std::endl;
     }
 
-    // if (false) {
     if (cameras.size() >= 2) {
         std::cout << "Creating Ball Pipeline" << std::endl;
         std::thread([&] {
             auto ntab = ntinst.GetTable("SmartDashboard");
+            int pipelineCount = 0;
 
             frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
             [&](BallPipeline &pipeline) {
+                if(pipelineCount == 0) {
+                    (int) ntab->PutNumber("YellowLowerH", 20);//lower: cv::Scalar(20, 170, 100), upper: cv::Scalar(30, 255, 255)
+                    (int) ntab->PutNumber("YellowLowerS", 170);
+                    (int) ntab->PutNumber("YellowLowerV", 100);
+                    (int) ntab->PutNumber("YellowUpperH", 30);
+                    (int) ntab->PutNumber("YellowUpperS", 255);
+                    (int) ntab->PutNumber("YellowUpperV", 255);
+                    ntab->PutNumber("MinBallRadius", 20.f);
+                    ntab->PutNumber("MaxBallRadius", 200.f);
+                    ntab->PutNumber("FieldOfViewVert", 43.30f);
+                    ntab->PutNumber("FieldOfViewHoriz", 70.42f);
+                    ntab->PutNumber("FocalLength", 3.67f);
+                    ntab->PutNumber("PixelSize",  0.00398f);
+                }
+                pipelineCount++;
+                if(pipelineCount % 90 == 0){ // Update about once a second
+                    pipeline.setConstants(
+                        (int) ntab->GetNumber("YellowLowerH", 20),//lower: cv::Scalar(20, 170, 100), upper: cv::Scalar(30, 255, 255)
+                        (int) ntab->GetNumber("YellowLowerS", 170),
+                        (int) ntab->GetNumber("YellowLowerV", 100),
+                        (int) ntab->GetNumber("YellowUpperH", 30),
+                        (int) ntab->GetNumber("YellowUpperS", 255),
+                        (int) ntab->GetNumber("YellowUpperV", 255),
+                        ntab->GetNumber("MinBallRadius", 20.f),
+                        ntab->GetNumber("MaxBallRadius", 200.f),
+                        ntab->GetNumber("FieldOfViewVert", 43.30f),
+                        ntab->GetNumber("FieldOfViewHoriz", 70.42f),
+                        ntab->GetNumber("FocalLength", 3.67f),
+                        ntab->GetNumber("PixelSize",  0.00398f)
+                    );
+                }
                 if(pipeline.result.empty()){
                     ntab->PutNumber("NumBalls", 0);
                     ntab->PutNumber("ClosestBallCenterX", 0);

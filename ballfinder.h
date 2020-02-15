@@ -37,6 +37,9 @@ namespace bf
             CBallFinder();
             int getMaxAreaContourId(std::vector< std::vector<cv::Point> > contours);
             void work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls);
+            void setConstants(cv::Scalar f_yellowLower, cv::Scalar f_yellowUpper, float f_minDetectedRadius, 
+                                float f_maxDetectedRadius, float f_fieldOfViewVertDeg, float f_fieldOfViewHorizDeg, 
+                                float f_focalLength, float f_pixelSize);
 
         private:
             cv::Mat m_hsvImage;

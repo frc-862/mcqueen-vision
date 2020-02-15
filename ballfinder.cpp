@@ -4,26 +4,21 @@
 #include <cmath>
 
 
-const int iCols = 640;
-const int iRows = 480;
+cv::Scalar iYellowThresholdsLower = cv::Scalar(20, 170, 100);// cv::Scalar(15, 100, 100); 
+cv::Scalar iYellowThresholdsUpper = cv::Scalar(30, 255, 255);// cv::Scalar(90, 255, 255); 
 
-
-const cv::Scalar iYellowThresholdsLower = cv::Scalar(20, 170, 100);// cv::Scalar(15, 100, 100); 
-const cv::Scalar iYellowThresholdsUpper = cv::Scalar(30, 255, 255);// cv::Scalar(90, 255, 255); 
-
-const float fFieldOfViewVertRad = 43.30 * (M_PI / 180.f);
-const float fFieldOfViewHorizRad = 70.42 * (M_PI / 180.f);
+float fFieldOfViewVertRadians = 43.30 * (M_PI / 180.f);
+float fFieldOfViewHorizRadians = 70.42 * (M_PI / 180.f);
 
 const float fBallHeight = 7.f; // 2.5 for small balls
 
-const float fMinDetectedRadius = 20.f;
-const float fMaxDetectedRadius = 200.f;
+float fMinDetectedRadius = 20.f;
+float fMaxDetectedRadius = 200.f;
 
 //! Camera Specific Values
-const float focalLength = 3.67f;
-const float pixelSize = 0.00398f;
-const float focal = focalLength / pixelSize;
-
+float focalLength = 3.67f;
+float pixelSize = 0.00398f;
+float focal = focalLength / pixelSize;
 
 using namespace cv;
 using namespace std;
@@ -32,6 +27,20 @@ namespace bf
 {
 
 	CBallFinder::CBallFinder() { }
+
+    void 
+    CBallFinder::setConstants(cv::Scalar f_yellowLower, cv::Scalar f_yellowUpper, float f_minDetectedRadius, float f_maxDetectedRadius, 
+                                float f_fieldOfViewVertDeg, float f_fieldOfViewHorizDeg, float f_focalLength, float f_pixelSize) {
+        iYellowThresholdsLower = f_yellowLower;
+        iYellowThresholdsUpper = f_yellowUpper;
+        fMinDetectedRadius = f_minDetectedRadius;
+        fMaxDetectedRadius = f_maxDetectedRadius;
+        fFieldOfViewHorizRadians = f_fieldOfViewHorizDeg * (M_PI / 180.f);
+        fFieldOfViewVertRadians = f_fieldOfViewVertDeg * (M_PI / 180.f);
+        focalLength = f_focalLength;
+        pixelSize = f_pixelSize;
+        focal = focalLength / pixelSize;
+    }
 
     int 
     CBallFinder::getMaxAreaContourId(std::vector< std::vector<cv::Point> > contours) {
@@ -42,10 +51,10 @@ namespace bf
             if (newArea > maxArea) {
                 maxArea = newArea;
                 maxAreaContourId = j;
-            } // End if
-        } // End for
+            } 
+        } 
         return maxAreaContourId;
-    } // End function
+    } 
 
     void
     CBallFinder::work(cv::Mat & f_imgIn, ballList_t & f_listOfBalls)
@@ -75,7 +84,6 @@ namespace bf
         float radius;
 
         std::vector<cv::Point> contour;
-        // std::cout << "Me Got " << contours.size() << " contours" << std::endl;
 
         if(contours.size() > 0) 
         {
@@ -95,7 +103,7 @@ namespace bf
 
 						ball.center = center;
 
-						ball.distance = ((fBallHeight / (tan((2 * radius) * (fFieldOfViewVertRad / m_maskImage.rows)))) / 12);
+						ball.distance = ((fBallHeight / (tan((2 * radius) * (fFieldOfViewVertRadians / m_maskImage.rows)))) / 12);
 
 						float centerCamX = m_maskImage.cols / 2.f;
 						
