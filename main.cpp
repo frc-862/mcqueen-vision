@@ -451,7 +451,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 counter++;
-                if ((counter % 90) && log_images == 0) {
+                if ((counter % 90) && log_images == true) {
                     ImageInfo info = { "src", x, y, height, smooth.size() };
                     loggingQueue.push(std::make_pair(*pipeline.GetSource(), info));
                     ImageInfo info2 = { "mask", x, y, height, smooth.size() };
