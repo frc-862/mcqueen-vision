@@ -535,12 +535,12 @@ int main(int argc, char* argv[]) {
             frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
             [&](BallPipeline &pipeline) {
                 if(pipelineCount == 0) {
-                    (int) ntab->PutNumber("YellowLowerH", 20);//lower: cv::Scalar(20, 170, 100), upper: cv::Scalar(30, 255, 255)
-                    (int) ntab->PutNumber("YellowLowerS", 170);
-                    (int) ntab->PutNumber("YellowLowerV", 100);
-                    (int) ntab->PutNumber("YellowUpperH", 30);
-                    (int) ntab->PutNumber("YellowUpperS", 255);
-                    (int) ntab->PutNumber("YellowUpperV", 255);
+                    ntab->PutNumber("YellowLowerH", 20);//lower: cv::Scalar(20, 170, 100), upper: cv::Scalar(30, 255, 255)
+                    ntab->PutNumber("YellowLowerS", 170);
+                    ntab->PutNumber("YellowLowerV", 100);
+                    ntab->PutNumber("YellowUpperH", 30);
+                    ntab->PutNumber("YellowUpperS", 255);
+                    ntab->PutNumber("YellowUpperV", 255);
                     ntab->PutNumber("MinBallRadius", 20.f);
                     ntab->PutNumber("MaxBallRadius", 200.f);
                     ntab->PutNumber("FieldOfViewVert", 43.30f);
