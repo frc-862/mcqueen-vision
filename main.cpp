@@ -320,19 +320,19 @@ private:
 
 std::string meta_data_name(int index, std::string path, const ImageInfo& info, std::string suffix = ".json") {
     int leading = 5; //6 at max
-    return path + "/" + std::string(info.tag) + "-" + 
-           std::to_string(index * 0.000001).substr(8-leading) + suffix;
+    return path + "/img_" + std::to_string(index * 0.000001).substr(8-leading) + "-" +  std::string(info.tag) 
+            + suffix;
 }
 
 std::string image_name(int index, std::string path, const ImageInfo& info, std::string suffix = ".jpg") {
     int leading = 5; //6 at max
-    return path + "/" + std::string(info.tag) + "-" + 
-           std::to_string(index * 0.000001).substr(8-leading) + suffix;
+    return path + "/img_" + std::to_string(index * 0.000001).substr(8-leading) + "-" +  std::string(info.tag) 
+            + suffix;
 }
 
 std::string image_name(int index, std::string prefix = "image", std::string suffix = ".jpg") {
     int leading = 5; //6 at max
-    return prefix + std::to_string(index * 0.000001).substr(8-leading) + suffix;
+    return "img_" + std::to_string(index * 0.000001).substr(8-leading) + prefix + suffix;
 }
 
 int main(int argc, char* argv[]) {
