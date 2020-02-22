@@ -404,6 +404,10 @@ int main(int argc, char* argv[]) {
                     ntab->PutNumber("TargetRowCConstant", -832.33f);
                 }
 
+                nt::NetworkTableEntry visionMode = ntab->GetEntry("VisionMode");
+                bool isDoTarget = visionMode.GetBoolean(true);
+                if (isDoTarget)
+                {
                 auto start = std::chrono::steady_clock::now();
 
                 // do something with pipeline results
@@ -484,6 +488,7 @@ int main(int argc, char* argv[]) {
 
                 auto end = std::chrono::steady_clock::now();
                 elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                }
             });
 
             runner.RunForever();
@@ -532,6 +537,8 @@ int main(int argc, char* argv[]) {
             auto ntab = ntinst.GetTable("SmartDashboard");
             int pipelineCount = 0;
 
+
+
             frc::VisionRunner<BallPipeline> runner(cameras[1], new BallPipeline(),
             [&](BallPipeline &pipeline) {
                 if(pipelineCount == 0) {
@@ -548,6 +555,11 @@ int main(int argc, char* argv[]) {
                     ntab->PutNumber("FocalLength", 3.67f);
                     ntab->PutNumber("PixelSize",  0.00398f);
                 }
+                    
+            nt::NetworkTableEntry visionMode = ntab->GetEntry("VisionMode");
+            bool isDoBallFinding = visionMode.GetBoolean(true);//will do ball finding when false
+            if (!isDoBallFinding)
+            {
                 pipelineCount++;
                 if(pipelineCount % 90 == 0){ // Update about once a second
                     pipeline.setConstants(
@@ -577,8 +589,10 @@ int main(int argc, char* argv[]) {
                     ntab->PutNumber("ClosestBallCenterY", pipeline.result.at(0).center.x);
                     ntab->PutNumber("ClosestBallAngle", pipeline.result.at(0).angle);
                     ntab->PutNumber("ClosestBallDistance", pipeline.result.at(0).distance);
-                }  
+                } 
+            }
             });
+            
 
             runner.RunForever();
         }).detach();
