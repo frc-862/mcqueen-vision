@@ -8,7 +8,7 @@ find_package(Threads REQUIRED)
 
 #--------------------------------------------------------------------------
 
-include_directories(AFTER ${PROJECT_SOURCE_DIR}/libSSD1306)
+include_directories(AFTER ${PROJECT_SOURCE_DIR}/include)
 add_executable(lightningVision main.cpp InfiniteRecharge.cpp ballfinder.cpp)
 set_target_properties(lightningVision PROPERTIES CXX_STANDARD 17)
 target_compile_options(lightningVision PRIVATE -Werror -Wall)

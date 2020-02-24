@@ -387,23 +387,28 @@ int main(int argc, char* argv[]) {
             int counter = 0;
             auto ntab = ntinst.GetTable("SmartDashboard");
 
-            frc::VisionRunner<tf::Pipeline> runner(cameras[0], new tf::Pipeline(),
-            [&](tf::Pipeline &pipeline) {
+            ntab->PutNumber("FieldOfViewVert", 43.30f);
+            ntab->PutNumber("FieldOfViewHoriz", 70.42f);
+            ntab->PutNumber("TargetHeightRatio", 1.f);
+            ntab->PutNumber("TargetRatioThreshold", 100.f);
+            ntab->PutNumber("TargetDistanceThreshold", 0.5f);
+            ntab->PutNumber("TargetHeightAConstant", 0.0084f);
+            ntab->PutNumber("TargetHeightBConstant", -1.4737f);
+            ntab->PutNumber("TargetHeightCConstant", 76.27f);
+            ntab->PutNumber("TargetRowAConstant", -0.0056f);
+            ntab->PutNumber("TargetRowBConstant", 4.4264f);
+            ntab->PutNumber("TargetRowCConstant", -832.33f);
 
-                if(counter == 0) {
-                    ntab->PutNumber("FieldOfViewVert", 43.30f);
-                    ntab->PutNumber("FieldOfViewHoriz", 70.42f);
-                    ntab->PutNumber("TargetHeightRatio", 1.f);
-                    ntab->PutNumber("TargetRatioThreshold", 100.f);
-                    ntab->PutNumber("TargetDistanceThreshold", 0.5f);
-                    ntab->PutNumber("TargetHeightAConstant", 0.0084f);
-                    ntab->PutNumber("TargetHeightBConstant", -1.4737f);
-                    ntab->PutNumber("TargetHeightCConstant", 76.27f);
-                    ntab->PutNumber("TargetRowAConstant", -0.0056f);
-                    ntab->PutNumber("TargetRowBConstant", 4.4264f);
-                    ntab->PutNumber("TargetRowCConstant", -832.33f);
-                }
+            auto pline = new tf::Pipeline();
+            ntab->PutNumber("HueLow", pline->getHue()[0]);
+            ntab->PutNumber("HueHigh", pline->getHue()[1]);
+            ntab->PutNumber("SaturationLow", pline->getSaturation()[0]);
+            ntab->PutNumber("SaturationHigh", pline->getSaturation()[1]);
+            ntab->PutNumber("ValueLow", pline->getValue()[0]);
+            ntab->PutNumber("ValueHigh", pline->getValue()[1]);
 
+            frc::VisionRunner<tf::Pipeline> runner(cameras[0], pline,
+                                                   [&](tf::Pipeline &pipeline) {
                 auto start = std::chrono::steady_clock::now();
 
                 // do something with pipeline results
@@ -451,14 +456,21 @@ int main(int argc, char* argv[]) {
                 }
 
                 counter++;
-                if ((counter % 90) && log_images == true) {
-                    ImageInfo info = { "src", x, y, height, smooth.size() };
-                    loggingQueue.push(std::make_pair(*pipeline.GetSource(), info));
-                    ImageInfo info2 = { "mask", x, y, height, smooth.size() };
-                    loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
-                }
-
                 if(counter % 90 == 0){ // Update about once a second
+                    if (log_images == true) {
+                        ImageInfo info = { "src", x, y, height, smooth.size() };
+                        loggingQueue.push(std::make_pair(*pipeline.GetSource(), info));
+                        ImageInfo info2 = { "mask", x, y, height, smooth.size() };
+                        loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
+                    }
+
+                    pipeline.setHue(ntab->GetNumber("HueLow", pipeline.getHue()[0]),
+                                    ntab->GetNumber("HueHigh", pipeline.getHue()[1]));
+                    pipeline.setSaturation(ntab->GetNumber("SaturationLow", pipeline.getSaturation()[0]),
+                            ntab->GetNumber("SaturationHigh", pipeline.getSaturation()[1]));
+                    pipeline.setValue(ntab->GetNumber("ValueLow", pipeline.getValue()[0]),
+                                    ntab->GetNumber("ValueHigh", pipeline.getValue()[1]));
+
                     pipeline.setConstants(
                         ntab->GetNumber("FieldOfViewVert", 43.30f),
                         ntab->GetNumber("FieldOfViewHoriz", 70.42f),
@@ -473,12 +485,12 @@ int main(int argc, char* argv[]) {
                         ntab->GetNumber("TargetRowCConstant", -832.33f)
                     );
                     std::cout << counter << "\n##### Target Acquired #####\n"
-				        << "(X,Y)-> (" << target.center.x << " , " << target.center.y << ")\n"
-				        << "Width-> " << target.width << "\n"
-				        << "Height-> " << target.height << "\n"
-				        << "Angle-> " << target.angle << "\n"
-				        << "Distance-> " << target.distance
-				        << std::endl;
+                      << "(X,Y)-> (" << target.center.x << " , " << target.center.y << ")\n"
+                      << "Width-> " << target.width << "\n"
+                      << "Height-> " << target.height << "\n"
+                      << "Angle-> " << target.angle << "\n"
+                      << "Distance-> " << target.distance
+                      << std::endl;
                 }
                 
 
@@ -548,15 +560,16 @@ int main(int argc, char* argv[]) {
                     ntab->PutNumber("FocalLength", 3.67f);
                     ntab->PutNumber("PixelSize",  0.00398f);
                 }
+
                 pipelineCount++;
                 if(pipelineCount % 90 == 0){ // Update about once a second
                     pipeline.setConstants(
-                        (int) ntab->GetNumber("YellowLowerH", 20),//lower: cv::Scalar(20, 170, 100), upper: cv::Scalar(30, 255, 255)
-                        (int) ntab->GetNumber("YellowLowerS", 170),
-                        (int) ntab->GetNumber("YellowLowerV", 100),
-                        (int) ntab->GetNumber("YellowUpperH", 30),
-                        (int) ntab->GetNumber("YellowUpperS", 255),
-                        (int) ntab->GetNumber("YellowUpperV", 255),
+                        ntab->GetNumber("YellowLowerH", 20),//lower: cv::Scalar(20, 170, 100), upper: cv::Scalar(30, 255, 255)
+                        ntab->GetNumber("YellowLowerS", 170),
+                        ntab->GetNumber("YellowLowerV", 100),
+                        ntab->GetNumber("YellowUpperH", 30),
+                        ntab->GetNumber("YellowUpperS", 255),
+                        ntab->GetNumber("YellowUpperV", 255),
                         ntab->GetNumber("MinBallRadius", 20.f),
                         ntab->GetNumber("MaxBallRadius", 200.f),
                         ntab->GetNumber("FieldOfViewVert", 43.30f),
@@ -565,6 +578,7 @@ int main(int argc, char* argv[]) {
                         ntab->GetNumber("PixelSize",  0.00398f)
                     );
                 }
+
                 if(pipeline.result.empty()){
                     ntab->PutNumber("NumBalls", 0);
                     ntab->PutNumber("ClosestBallCenterX", 0);

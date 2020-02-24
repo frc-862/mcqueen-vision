@@ -4,6 +4,7 @@ namespace grip {
 
 InfiniteRecharge::InfiniteRecharge() {
 }
+
 /**
 * Runs an iteration of the pipeline and updates outputs.
 */
@@ -11,10 +12,10 @@ void InfiniteRecharge::Process(cv::Mat& source0){
 	//Step HSV_Threshold0:
 	//input
 	cv::Mat hsvThresholdInput = source0;
-	double hsvThresholdHue[] = {46.942446043165454, 97.48726655348048};
-	double hsvThresholdSaturation[] = {126.12410071942446, 250.67062818336163};
-	double hsvThresholdValue[] = {4.586330935251798, 255.0};
-	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
+//	double hsvThresholdHue[] = {46.942446043165454, 97.48726655348048};
+//	double hsvThresholdSaturation[] = {126.12410071942446, 250.67062818336163};
+//	double hsvThresholdValue[] = {4.586330935251798, 255.0};
+	hsvThreshold(hsvThresholdInput, getHue(), getSaturation(), getValue(), this->hsvThresholdOutput);
 	//Step CV_dilate0:
 	//input
 	cv::Mat cvDilateSrc = hsvThresholdOutput;

@@ -34,6 +34,10 @@ class InfiniteRecharge : public frc::VisionPipeline {
 		void findContours(cv::Mat &, bool , std::vector<std::vector<cv::Point> > &);
 		void filterContours(std::vector<std::vector<cv::Point> > &, double , double , double , double , double , double , double [], double , double , double , double , std::vector<std::vector<cv::Point> > &);
 
+		double hue[2] = {46.942446043165454, 97.48726655348048};
+		double sat[2] = {126.12410071942446, 250.67062818336163};
+		double val[2] = {4.586330935251798, 255.0};
+
 	public:
 		InfiniteRecharge();
 		void Process(cv::Mat& source0) override;
@@ -42,6 +46,25 @@ class InfiniteRecharge : public frc::VisionPipeline {
 		cv::Mat* GetCvErodeOutput();
 		std::vector<std::vector<cv::Point> >* GetFindContoursOutput();
 		std::vector<std::vector<cv::Point> >* GetFilterContoursOutput();
+
+        void setHue(double low, double high) {
+            hue[0] = low;
+            hue[1] = high;
+        }
+
+        void setSaturation(double low, double high) {
+            sat[0] = low;
+            sat[1] = high;
+        }
+
+        void setValue(double low, double high) {
+            val[0] = low;
+            val[1] = high;
+        }
+
+        double* getHue() { return hue; }
+        double* getSaturation() { return sat; }
+        double* getValue() { return val; }
 };
 
 

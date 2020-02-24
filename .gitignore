@@ -15,4 +15,6 @@ ballfinder.py
 *.db
 *.opendb
 *.ipch
-
+.idea/
+cmake-build-cross-compile/
+cmake-build-debug/
