@@ -207,6 +207,7 @@ bool ReadConfig() {
     } catch (const wpi::json::exception& e) {
         debug = false;
     }
+    wpi::outs() << "Debug streams active: " << (debug ? "true" : "false") << '\n';
 
     // ntmode (optional)
     if (j.count("ntmode") != 0) {
