@@ -18,3 +18,5 @@ ballfinder.py
 .idea/
 cmake-build-cross-compile/
 cmake-build-debug/
+b2
+test

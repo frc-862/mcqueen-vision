@@ -28,10 +28,10 @@
 
 namespace fs = std::filesystem;
 
-const int width = 640;
-const int height = 480;
-const int halfWidth = width / 2;
-const int halfHeight = height / 2;
+//const int width = 640;
+//const int height = 480;
+//const int halfWidth = width / 2;
+//const int halfHeight = height / 2;
 
 
 /*
@@ -78,14 +78,6 @@ const int halfHeight = height / 2;
  */
 
 static const char* configFile = "/boot/frc.json";
-
-struct ImageInfo {
-  const char* tag;
-  int x;
-  int y;
-  int height;
-  size_t count;
-};
 
 static SafeQueue<std::pair<cv::Mat,ImageInfo>> loggingQueue;
 
@@ -313,7 +305,7 @@ public:
 
 private: 
     bf::CBallFinder finder;
-    int i = 0;
+    //int i = 0;
 };
 
 
@@ -401,27 +393,25 @@ int main(int argc, char* argv[]) {
             ntab->PutNumber("TargetRowCConstant", -832.33f);
 
             auto pline = new tf::Pipeline();
-            ntab->PutNumber("HueLow", pline->getHue()[0]);
-            ntab->PutNumber("HueHigh", pline->getHue()[1]);
-            ntab->PutNumber("SaturationLow", pline->getSaturation()[0]);
-            ntab->PutNumber("SaturationHigh", pline->getSaturation()[1]);
-            ntab->PutNumber("ValueLow", pline->getValue()[0]);
-            ntab->PutNumber("ValueHigh", pline->getValue()[1]);
+            //ntab->PutNumber("HueLow", pline->getHue()[0]);
+            //ntab->PutNumber("HueHigh", pline->getHue()[1]);
+            //ntab->PutNumber("SaturationLow", pline->getSaturation()[0]);
+            //ntab->PutNumber("SaturationHigh", pline->getSaturation()[1]);
+            //ntab->PutNumber("ValueLow", pline->getValue()[0]);
+            //ntab->PutNumber("ValueHigh", pline->getValue()[1]);
 
             frc::VisionRunner<tf::Pipeline> runner(cameras[0], pline,
                                                    [&](tf::Pipeline &pipeline) {
                 auto start = std::chrono::steady_clock::now();
 
                 // do something with pipeline results
-                const auto& contours = *pipeline.GetContours();
+                const auto contours = *pipeline.GetContours();
                 if (debug) source.PutFrame(*pipeline.GetMasked());
-
-                auto& smooth = contours;
-                count = smooth.size();
+                count = contours.size();
 
                 if (debug) {
                   auto fun = pipeline.GetSource()->clone();
-                  drawContours(fun, smooth, -1, blue, 2);
+                  drawContours(fun, contours, -1, blue, 2);
                   std::string msg{"Count: "};
                   msg += std::to_string(count);
                   putText(fun, msg, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, 
@@ -459,18 +449,18 @@ int main(int argc, char* argv[]) {
                 counter++;
                 if(counter % 90 == 0){ // Update about once a second
                     if (log_images == true) {
-                        ImageInfo info = { "src", x, y, height, smooth.size() };
+                        ImageInfo info = { "src", x, y, height, contours.size() };
                         loggingQueue.push(std::make_pair(*pipeline.GetSource(), info));
-                        ImageInfo info2 = { "mask", x, y, height, smooth.size() };
+                        ImageInfo info2 = { "mask", x, y, height, contours.size() };
                         loggingQueue.push(std::make_pair(*pipeline.GetMasked(), info2));
                     }
 
-                    pipeline.setHue(ntab->GetNumber("HueLow", pipeline.getHue()[0]),
-                                    ntab->GetNumber("HueHigh", pipeline.getHue()[1]));
-                    pipeline.setSaturation(ntab->GetNumber("SaturationLow", pipeline.getSaturation()[0]),
-                            ntab->GetNumber("SaturationHigh", pipeline.getSaturation()[1]));
-                    pipeline.setValue(ntab->GetNumber("ValueLow", pipeline.getValue()[0]),
-                                    ntab->GetNumber("ValueHigh", pipeline.getValue()[1]));
+                    //pipeline.setHue(ntab->GetNumber("HueLow", pipeline.getHue()[0]),
+                                    //ntab->GetNumber("HueHigh", pipeline.getHue()[1]));
+                    //pipeline.setSaturation(ntab->GetNumber("SaturationLow", pipeline.getSaturation()[0]),
+                            //ntab->GetNumber("SaturationHigh", pipeline.getSaturation()[1]));
+                    //pipeline.setValue(ntab->GetNumber("ValueLow", pipeline.getValue()[0]),
+                                    //ntab->GetNumber("ValueHigh", pipeline.getValue()[1]));
 
                     pipeline.setConstants(
                         ntab->GetNumber("FieldOfViewVert", 43.30f),

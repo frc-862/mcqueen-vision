@@ -2,7 +2,8 @@
     "fps": 30,
     "height": 600,
     "pixel format": "mjpeg",
-    "properties": [
+    "properties": 
+    [
         {
             "name": "connect_verbose",
             "value": 1
