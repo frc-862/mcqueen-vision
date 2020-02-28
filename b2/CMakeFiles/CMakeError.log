@@ -1,7 +1,0 @@
-Determining if the C compiler works failed with the following output:
-Change Dir: U:/code/projects/mcqueen-vision/b2/CMakeFiles/CMakeTmp
-
-Run Build Command(s):nmake /nologo cmTC_40ec9\fast && The system cannot find the file specified
-Generator: execution of make failed. Make command was: nmake /nologo cmTC_40ec9\fast && 
-
-
