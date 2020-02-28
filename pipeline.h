@@ -1,5 +1,3 @@
-#pragma once
-
 #define _USE_MATH_DEFINES
 
 #include <cstdio>
@@ -9,8 +7,6 @@
 #include <filesystem>
 #include <cmath>
 #include "math.h"
-
-#include "InfiniteRecharge.h"
 
 float fFieldOfViewVertRad = 43.30 * (M_PI / 180.f);
 float fFieldOfViewHorizRad = 70.42 * (M_PI / 180.f);
@@ -27,15 +23,8 @@ float fTargetRow_a = -0.0056f;
 float fTargetRow_b = 4.4264f;
 float fTargetRow_c = -832.33f;
 
-struct ImageInfo {
-  const char* tag;
-  int x;
-  int y;
-  int height;
-  size_t count;
-};
-
-namespace tf {
+namespace tf
+{
 
 	struct Target {
 		Target() :
@@ -74,7 +63,7 @@ namespace tf {
 		}
 
 		std::vector<std::vector<cv::Point> >* GetContours() {
-      return GetFilterContoursOutput();
+			return GetFilterContoursOutput();
 		}
 
 		float getInterpolatedDistanceFromTargetHeight(float f_targetHeight)
@@ -134,9 +123,7 @@ namespace tf {
 		// contour to filter
 		bool findBestTarget(tf::Target& target) {
 			auto contours = GetContours();
-      auto count = contours->size();
-
-			if (count == 0) return false;
+			if (contours->size() == 0) return false;
 
 			// target = cv::Rect(0, 0, 0, 0);
 			target = tf::Target();
@@ -171,5 +158,4 @@ namespace tf {
 		double elapsed;
 	};
 
-} // end tf namespace
-
+}
