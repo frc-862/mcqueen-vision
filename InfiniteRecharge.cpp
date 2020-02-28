@@ -4,25 +4,30 @@ namespace grip {
 
 InfiniteRecharge::InfiniteRecharge() {
 }
-
 /**
 * Runs an iteration of the pipeline and updates outputs.
 */
 void InfiniteRecharge::Process(cv::Mat& source0){
+	//Step Blur0:
+	//input
+	cv::Mat blurInput = source0;
+	BlurType blurType = BlurType::GAUSSIAN;
+	double blurRadius = 2.7027027027027035;  // default Double
+	blur(blurInput, blurType, blurRadius, this->blurOutput);
 	//Step HSV_Threshold0:
 	//input
-	cv::Mat hsvThresholdInput = source0;
-//	double hsvThresholdHue[] = {46.942446043165454, 97.48726655348048};
-//	double hsvThresholdSaturation[] = {126.12410071942446, 250.67062818336163};
-//	double hsvThresholdValue[] = {4.586330935251798, 255.0};
-	hsvThreshold(hsvThresholdInput, getHue(), getSaturation(), getValue(), this->hsvThresholdOutput);
+	cv::Mat hsvThresholdInput = blurOutput;
+	//double hsvThresholdHue[] = {53.417266187050366, 112.76740237691003};
+	//double hsvThresholdSaturation[] = {119.88309352517985, 255.0};
+	//double hsvThresholdValue[] = {6.879756800994235, 134.16328821016236};
+	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
 	//Step CV_dilate0:
 	//input
 	cv::Mat cvDilateSrc = hsvThresholdOutput;
 	cv::Mat cvDilateKernel;
 	cv::Point cvDilateAnchor(-1, -1);
-	double cvDilateIterations = 3.0;  // default Double
-    int cvDilateBordertype = cv::BORDER_CONSTANT;
+	double cvDilateIterations = 2.0;  // default Double
+    int cvDilateBordertype = cv::BORDER_REPLICATE;
 	cv::Scalar cvDilateBordervalue(-1);
 	cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, this->cvDilateOutput);
 	//Step CV_erode0:
@@ -31,31 +36,38 @@ void InfiniteRecharge::Process(cv::Mat& source0){
 	cv::Mat cvErodeKernel;
 	cv::Point cvErodeAnchor(-1, -1);
 	double cvErodeIterations = 1.0;  // default Double
-    int cvErodeBordertype = cv::BORDER_CONSTANT;
+    int cvErodeBordertype = cv::BORDER_DEFAULT;
 	cv::Scalar cvErodeBordervalue(-1);
 	cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
 	//Step Find_Contours0:
 	//input
 	cv::Mat findContoursInput = cvErodeOutput;
-	bool findContoursExternalOnly = false;  // default Boolean
+	bool findContoursExternalOnly = true;  // default Boolean
 	findContours(findContoursInput, findContoursExternalOnly, this->findContoursOutput);
 	//Step Filter_Contours0:
 	//input
 	std::vector<std::vector<cv::Point> > filterContoursContours = findContoursOutput;
 	double filterContoursMinArea = 300.0;  // default Double
-	double filterContoursMinPerimeter = 0;  // default Double
-	double filterContoursMinWidth = 0;  // default Double
-	double filterContoursMaxWidth = 1000;  // default Double
+	double filterContoursMinPerimeter = 0.0;  // default Double
+	double filterContoursMinWidth = 0.0;  // default Double
+	double filterContoursMaxWidth = 1000.0;  // default Double
 	double filterContoursMinHeight = 20.0;  // default Double
 	double filterContoursMaxHeight = 1000.0;  // default Double
 	double filterContoursSolidity[] = {0, 100};
 	double filterContoursMaxVertices = 1000.0;  // default Double
-	double filterContoursMinVertices = 0;  // default Double
-	double filterContoursMinRatio = 0;  // default Double
-	double filterContoursMaxRatio = 1000;  // default Double
+	double filterContoursMinVertices = 0.0;  // default Double
+	double filterContoursMinRatio = 0.0;  // default Double
+	double filterContoursMaxRatio = 1000.0;  // default Double
 	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
 }
 
+/**
+ * This method is a generated getter for the output of a Blur.
+ * @return Mat output from Blur.
+ */
+cv::Mat* InfiniteRecharge::GetBlurOutput(){
+	return &(this->blurOutput);
+}
 /**
  * This method is a generated getter for the output of a HSV_Threshold.
  * @return Mat output from HSV_Threshold.
@@ -91,6 +103,35 @@ std::vector<std::vector<cv::Point> >* InfiniteRecharge::GetFindContoursOutput(){
 std::vector<std::vector<cv::Point> >* InfiniteRecharge::GetFilterContoursOutput(){
 	return &(this->filterContoursOutput);
 }
+	/**
+	 * Softens an image using one of several filters.
+	 *
+	 * @param input The image on which to perform the blur.
+	 * @param type The blurType to perform.
+	 * @param doubleRadius The radius for the blur.
+	 * @param output The image in which to store the output.
+	 */
+	void InfiniteRecharge::blur(cv::Mat &input, BlurType &type, double doubleRadius, cv::Mat &output) {
+		int radius = (int)(doubleRadius + 0.5);
+		int kernelSize;
+		switch(type) {
+			case BOX:
+				kernelSize = 2 * radius + 1;
+				cv::blur(input,output,cv::Size(kernelSize, kernelSize));
+				break;
+			case GAUSSIAN:
+				kernelSize = 6 * radius + 1;
+				cv::GaussianBlur(input, output, cv::Size(kernelSize, kernelSize), radius);
+				break;
+			case MEDIAN:
+				kernelSize = 2 * radius + 1;
+				cv::medianBlur(input, output, kernelSize);
+				break;
+			case BILATERAL:
+				cv::bilateralFilter(input, output, -1, radius, radius);
+				break;
+        }
+	}
 	/**
 	 * Segment an image based on hue, saturation, and value ranges.
 	 *
