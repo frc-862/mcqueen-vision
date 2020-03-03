@@ -15,13 +15,21 @@ float fTargetHeightRatio = 1.f; // TODO make a right number
 float fTargetRatioThreshold = 100.f; // TODO make a right number
 float fTargetDistanceThreshold = 0.5f;
 
-float fTargetHeight_a = 0.0084f;
-float fTargetHeight_b = -1.4737f;
-float fTargetHeight_c = 76.27f;
+//these values are to use a 2nd order polynomial to interpolate distance based on height
+float fTargetHeight_a = 0.00567f; //a-term for polynomial
+float fTargetHeight_b = -1.14f;   //b-term for polynomial
+float fTargetHeight_c = 60.6;     //c-term for polynomial
 
-float fTargetRow_a = -0.0056f;
-float fTargetRow_b = 4.4264f;
-float fTargetRow_c = -832.33f;
+//these values are to use a 2nd order polynomial to interpolate distance based on row at bottom of target
+float fTargetRow_a =  0.000885f;  //a-term for polynomial
+float fTargetRow_b = -0.471f;     //b-term for polynomial
+float fTargetRow_c = 66.5f;      //c-term for polynomial
+
+const double G_BOTTOM_TO_HEIGHT_SLOPE  = -0.385;
+const double G_BOTTOM_TO_HEIGHT_INTERCEPT = 201.0;
+const double G_BOTTOM_TO_HEIGHT_PERCENT_ERROR = 0.20;
+
+
 
 namespace tf
 {
@@ -115,6 +123,23 @@ namespace tf
             fTargetRow_c = f_targetRow_c;
         }
 
+		bool testTargetHeight(tf::Target f_targetRect)
+		{
+			bool isGoodTarget(false);
+			double bottomOfTarget = f_targetRect.center.y+f_targetRect.height/2.0f;
+			double expectedHeight = G_BOTTOM_TO_HEIGHT_SLOPE*bottomOfTarget + G_BOTTOM_TO_HEIGHT_INTERCEPT;
+
+			double heightDiff = abs(expectedHeight - f_targetRect.height);
+			double percentageDiff = (heightDiff/expectedHeight);
+			if (percentageDiff <= G_BOTTOM_TO_HEIGHT_PERCENT_ERROR)
+			{
+				isGoodTarget = true;
+			}
+
+
+			return isGoodTarget;
+		}
+
 		// would rather use std::max_element; however we would recalc
 		// boundingRect too often, mapping to boundingRect first would
 		// waste memory and use extra ram, so we do it by hand
@@ -135,7 +160,8 @@ namespace tf
 					temp.height = rect.height;
 					temp.center.x = (rect.x + (rect.width / 2));
 					temp.center.y = (rect.y + (rect.height / 2));
-					if (checkTargetProportion(temp)) {
+					if (checkTargetProportion(temp) && testTargetHeight(temp)) 
+					{
 						float tempDist = getInterpolatedDistanceFromTargetHeight(temp.height);
 						float tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
 						if (distancesInBounds(tempDist, tempDistTest)) {
