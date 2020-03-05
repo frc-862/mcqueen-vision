@@ -8,6 +8,8 @@
 #include <cmath>
 #include "math.h"
 
+#include "InfiniteRecharge.h"
+
 float fFieldOfViewVertRad = 43.30 * (M_PI / 180.f);
 float fFieldOfViewHorizRad = 70.42 * (M_PI / 180.f);
 
@@ -29,8 +31,6 @@ const double G_BOTTOM_TO_HEIGHT_SLOPE  = -0.385;
 const double G_BOTTOM_TO_HEIGHT_INTERCEPT = 201.0;
 const double G_BOTTOM_TO_HEIGHT_PERCENT_ERROR = 0.20;
 
-
-
 namespace tf
 {
 
@@ -43,12 +43,27 @@ namespace tf
 		cv::Point2f center;
 		float width;
 		float height;
+    size_t found;
 
 		float area() {
 			return height * width;
 		}
 
+    std::ostream& ostream(std::ostream& out) const {
+      return out << "{"
+                 << R"("angle": )" << angle 
+                 << R"(, "distance": )" << distance  
+                 << R"(, "width": )" << width  
+                 << R"(, "height": )" << height  
+                 << R"(, "x": )" << center.x  
+                 << R"(, "y": )" << center.y  
+                 << "}";
+    }
 	};
+
+  std::ostream& operator<<(std::ostream& os, const Target& t) {
+    return t.ostream(os);
+  }
 
 	class Pipeline : public grip::InfiniteRecharge {
 	public:
@@ -98,8 +113,16 @@ namespace tf
 
 		bool checkTargetProportion(tf::Target f_targetRect)
 		{
-			float ratio = (float)f_targetRect.height / (float)f_targetRect.center.y;
-			return ((std::abs(ratio) - fTargetHeightRatio) < fTargetRatioThreshold);
+      if (f_targetRect.height == 0) return false;
+
+      const auto bottom_y = f_targetRect.center.y - f_targetRect.height / 2;
+      const auto y = -0.385 * bottom_y + 201;
+      double error = abs(1 - y / f_targetRect.height);
+
+      std::cout << bottom_y << "," << f_targetRect.height << "," << y << "," << error << "\n"; 
+
+      // TODO dial this in
+			return error < 0.8;
 		}
 
 		bool distancesInBounds(float dist1, float dist2) {
@@ -140,18 +163,34 @@ namespace tf
 			return isGoodTarget;
 		}
 
-		// would rather use std::max_element; however we would recalc
-		// boundingRect too often, mapping to boundingRect first would
-		// waste memory and use extra ram, so we do it by hand
-		//
-		// TODO: Use height of bounding box, as a ratio to height of 
-		// contour to filter
+    void smartContourFilter() {
+      auto contours = GetContours();
+
+      auto it = contours->begin();
+      while (it != contours->end())
+      {
+				auto rect = cv::boundingRect(*it);
+        tf::Target temp;
+        temp.height = rect.height;
+        temp.center.x = (rect.x + (rect.width / 2));
+        temp.center.y = (rect.y + (rect.height / 2));
+
+        if (checkTargetProportion(temp)) {
+          ++it;
+        } else {
+          it = contours->erase(it);
+        }
+      }
+    }
+
 		bool findBestTarget(tf::Target& target) {
 			auto contours = GetContours();
-			if (contours->size() == 0) return false;
+      int count = contours->size();
+			if (count == 0) return false;
 
 			// target = cv::Rect(0, 0, 0, 0);
 			target = tf::Target();
+      target.found = count;
 
 			for (const auto object : *contours) {
 				auto rect = cv::boundingRect(object);

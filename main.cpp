@@ -441,7 +441,6 @@ int main(int argc, char* argv[]) {
                     ntab->PutNumber("VisionDistance", 0);
                     ntab->PutNumber("VisionAngle", 0);
                     ntab->PutNumber("VisionDelay", pipeline.GetDuration());
-
                 } else {
                     // const auto center = target.center;
                     // x = center.x - halfWidth;
@@ -494,7 +493,6 @@ int main(int argc, char* argv[]) {
                       << std::endl;
                 }
                 
-
                 auto end = std::chrono::steady_clock::now();
                 elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
             });
@@ -539,7 +537,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Logging Detached" << std::endl;
     }
 
-    if (cameras.size() >= 2) {
+    bool use_ball_tracker = false;
+    if (use_ball_tracker && cameras.size() >= 2) {
         std::cout << "Creating Ball Pipeline" << std::endl;
         std::thread([&] {
             auto ntab = ntinst.GetTable("SmartDashboard");
@@ -599,6 +598,7 @@ int main(int argc, char* argv[]) {
         }).detach();
         std::cout << "Ball Pipeline Detached" << std::endl;
     }
+
     for(;;); // TODO there is probably a better way to do this ... oh well
     std::cout << "\n################# MAIN THREAD TERMINATING #################\n" << std::endl;
 }

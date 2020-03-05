@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cd utils/build
+make
+
+echo prep test
+cd ../..
+rm -f results/*
+
+cd results
+echo run analyze
+../utils/build/analyze /Users/phurley/frc2020/vision_2020_02_25/src
+#../utils/build/analyze /Users/phurley/frc2020/vision_2020_02_27/img
+
+echo view results 
+open .
+
