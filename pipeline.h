@@ -45,6 +45,15 @@ namespace tf
 		float height;
     size_t found;
 
+		double getMagicRelation()
+		{
+      if (height == 0) return 100000;
+
+      const auto bottom_y = center.y - height / 2;
+      const auto y = -0.385 * bottom_y + 201;
+      return abs(1 - y / height);
+		}
+
 		float area() {
 			return height * width;
 		}
@@ -163,6 +172,14 @@ namespace tf
 			return isGoodTarget;
 		}
 
+		double getMagicRelation(cv::Rect& rect)
+		{
+      if (rect.height == 0) return 1000000;
+
+      const auto y = -0.385 * rect.y + 201;
+      return abs(1 - y / rect.height);
+		}
+
     void smartContourFilter() {
       auto contours = GetContours();
 
@@ -191,15 +208,19 @@ namespace tf
 			// target = cv::Rect(0, 0, 0, 0);
 			target = tf::Target();
       target.found = count;
+      double best = target.getMagicRelation();
+      bool found = false;
 
 			for (const auto object : *contours) {
 				auto rect = cv::boundingRect(object);
-				if ((rect.area() > target.area())) {
+        double score = getMagicRelation(rect);
+				if (score < best) {
+          best = score;
 					tf::Target temp;
 					temp.height = rect.height;
 					temp.center.x = (rect.x + (rect.width / 2));
 					temp.center.y = (rect.y + (rect.height / 2));
-					if (checkTargetProportion(temp) && testTargetHeight(temp)) 
+					if (testTargetHeight(temp)) 
 					{
 						float tempDist = getInterpolatedDistanceFromTargetHeight(temp.height);
 						float tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
@@ -210,11 +231,13 @@ namespace tf
 							target.center.x = (rect.x + (rect.width / 2));
 							target.center.y = (rect.y + (rect.height / 2));
 							target.angle = getAngleFromTarget(target, GetSource()->cols);
+              found = true;
 						}
 					}
 				}
 			}
-			return true;
+
+			return found;
 		}
 
 		unsigned long GetDuration() { return elapsed; }

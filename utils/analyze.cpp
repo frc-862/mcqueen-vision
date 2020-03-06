@@ -1,5 +1,6 @@
 #include <iostream>
 #include <filesystem>
+#include <regex>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -29,8 +30,14 @@ void withEachFile(const std::string path, T lambda) {
 template<typename T>
 void withEachImage(const std::string path, T lambda) {
   withEachFile(path, [lambda](auto fn) {
+      std::string number = std::regex_replace(
+          std::string(fn),
+          std::regex(".*src-([0-9]+).*"),
+          std::string("$1")
+          );
+      std::cout << fn << " -- " << number << "\n";
       auto img = cv::imread(fn);
-      if (img.data) lambda(img);
+      if (img.data) lambda(number, img);
   });
 }
 
@@ -44,11 +51,11 @@ int main(int argc, const char* argv[]) {
 
   int index = 1;
   tf::Target target;
-  withEachImage(path, [&p, &target, &index](auto img) {
+  withEachImage(path, [&p, &target, &index](auto number, auto img) {
       p.Process(img);
 
       std::string fname = "thresh-";
-      fname += std::to_string(index);
+      fname += number;
       fname += ".jpg";
 
       cv::imwrite(fname, *p.GetMasked());
@@ -68,7 +75,7 @@ int main(int argc, const char* argv[]) {
           cv::Scalar(200,200,250), 1, cv::LINE_AA);
 
       fname = "mask-";
-      fname += std::to_string(index);
+      fname += number;
       fname += ".jpg";
       cv::imwrite(fname, fun);
 
