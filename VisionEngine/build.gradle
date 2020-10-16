@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '4.0.3' apply false
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'Main'
+
+dependencies {
+    implementation 'org.reflections:reflections:0.9.12'
+    implementation project(':Pipelines')
+}
+
+apply from: '../build.common.gradle'

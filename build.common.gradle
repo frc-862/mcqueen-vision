@@ -1,0 +1,10 @@
+dependencies {
+    compile 'com.google.code.gson:gson:2.8.5'
+    compile name: '../libs/wpiutil'
+    compile name: '../libs/ntcore'
+    compile name: '../libs/cscore'
+    compile name: '../libs/cameraserver'
+    compile name: '../libs/opencv-347'
+    compile name: '../libs/wpilibj'
+    compile name: '../libs/wpiHal'
+}
