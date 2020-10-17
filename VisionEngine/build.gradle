@@ -6,7 +6,7 @@ plugins {
 
 apply plugin: 'com.github.johnrengelman.shadow'
 
-mainClassName = 'Main'
+mainClassName = 'engine.Main'
 
 dependencies {
     implementation 'org.reflections:reflections:0.9.12'

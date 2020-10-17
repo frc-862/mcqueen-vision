@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.reflections.Reflections;
+import org.reflections.scanners.*;
 
 import edu.wpi.first.networktables.NetworkTable;
 import util.AbstractVisionPipeline;
@@ -11,9 +12,13 @@ import util.annotation.*;
 
 public class PipelineFinder {
 
-    private static Reflections reflections = new Reflections("pipeline");
+    private Reflections reflections;
 
-    public static Set<String> retrieve() {
+    public PipelineFinder(String pkg) {
+        reflections = new Reflections(pkg, new TypeAnnotationsScanner(), new SubTypesScanner());
+    }
+
+    public Set<String> retrieve() {
 
         Set<Class<?>> types = reflections.getTypesAnnotatedWith(Pipeline.class);
 

@@ -19,28 +19,41 @@ public final class Main {
 
 	private static NetworkTableInstance ntinst;
 
+	private static int numPipelines = 0;
+
 	public Main() {
 	}
 
 	public static void main(String... args) {
+
+		System.out.println("Application Started");
 
 		if (args.length > 0)
 			CameraServerConfig.configFile = args[0];
 
 		if (!CameraServerConfig.readConfig())
 			return;
+		
+		System.out.println("Config Read Successfully");
 
 		startNetworkTables();
+		System.out.println("Network Tables Started Successfully");
 
 		startCameras();
+		System.out.println("Cameras Started Successfully");
 
 		// get all the pipelines from Pipeline module
-		Set<String> pipeNames = PipelineFinder.retrieve();
+		PipelineFinder pf = new PipelineFinder("pipelines");
+		Set<String> pipeNames = pf.retrieve();
+		numPipelines = pipeNames.size();
+		System.out.println(numPipelines + " Pipelines Retrieved");
 
 		// start all pipelines
 		for (String pipeName : pipeNames) {
+			System.out.println("Starting : " + pipeName);
+
 			Object pipelineInstance;
-			String className = "pipeline." + pipeName;
+			String className = pipeName;
 
 			// create instance of pipeline
 			try {
@@ -48,8 +61,10 @@ public final class Main {
 				Constructor<?> constObj = classObj.getConstructor();
 				pipelineInstance = constObj.newInstance();
 			} catch (ClassNotFoundException cnfe) {
+				printFailure("The Pipeline Was Not Found");
 				continue; // TODO: log when pipeline is skipped b/c it doesn't exist . . .
 			} catch (Exception e) {
+				printFailure("The Pipeline Could Not Be Instantiated");
 				continue; // TODO: log when pipeline is skipped b/c unexpected error
 			}
 
@@ -58,6 +73,7 @@ public final class Main {
 			try {
 				inst = (AbstractVisionPipeline) pipelineInstance;
 			} catch (Exception e) {
+				printFailure("The Pipeline is Not a Pipeline");
 				continue; // TODO: log when pipeline is skipped b/c it is not a pipeline . . . 
 			}
 
@@ -66,6 +82,7 @@ public final class Main {
 			try {
 				CameraServerConfig.cameras.get(PipelineFinder.getCamera(inst));
 			} catch(ArrayIndexOutOfBoundsException aioobe) {
+				printFailure("There is No Camera");
 				continue; // TODO: log when pipeline is skipped b/c there is no camera
 			}
 
@@ -77,11 +94,14 @@ public final class Main {
 					pipeline.log(ntab);
 				});
 				visionThread.start();
+				System.out.println("Pipeline Started");
 			}
 
 		}
 
+		System.out.println("Running " + numPipelines + " Pipelines");
 		runThreads();
+		System.out.println("Application Successfully Terminated");
 	}
 
 	private static void startNetworkTables() {
@@ -113,7 +133,13 @@ public final class Main {
 			} catch (InterruptedException ex) {
 				return;
 			}
+			if(numPipelines == 0) break;
 		}
+	}
+
+	private static void printFailure(String msg) {
+		System.out.println(msg);
+		numPipelines--;
 	}
 
 }
