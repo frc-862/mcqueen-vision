@@ -1,7 +1,12 @@
+# Lightning Vision
+
+![gradle build](https://github.com/edurso/lightning-vision/workflows/gradle%20build/badge.svg)
+
+Program to be uploaded to raspberry pi vision module.
+
 ## Building on desktop
 
 ### Building
-
 
 Java 11 is required to build.  Set your path and/or JAVA_HOME environment
 variable appropriately.
