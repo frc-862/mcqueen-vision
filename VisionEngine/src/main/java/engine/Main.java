@@ -86,12 +86,12 @@ public final class Main {
 				continue; // TODO: log when pipeline is skipped b/c there is no camera
 			}
 
-			NetworkTable ntab = ntinst.getTable(PipelineFinder.getNetworkTable(inst));
+			final NetworkTable ntab = ntinst.getTable(PipelineFinder.getNetworkTable(inst));
 
 			// start thread for pipeline
 			if (CameraServerConfig.cameras.size() >= 1 && pipelineInstance instanceof AbstractVisionPipeline) {
 				VisionThread visionThread = new VisionThread(camera, inst, pipeline -> {
-					pipeline.log(ntab);
+					pipeline.log(ntab); // to ntab does not exist?
 				});
 				visionThread.start();
 				System.out.println("Pipeline Started");
