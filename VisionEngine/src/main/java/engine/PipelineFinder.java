@@ -42,10 +42,4 @@ public class PipelineFinder {
         return camera;
     }
 
-    public static String getNetworkTable(AbstractVisionPipeline pipe) {
-        Pipeline p = pipe.getClass().getAnnotation(Pipeline.class);
-        String ntab = p.ntab();
-        return ntab;
-    }
-
 }

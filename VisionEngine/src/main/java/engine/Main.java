@@ -4,6 +4,7 @@ import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
+import edu.wpi.first.vision.VisionRunner;
 import edu.wpi.first.vision.VisionThread;
 
 import java.lang.reflect.Constructor;
@@ -77,6 +78,8 @@ public final class Main {
 				continue; // TODO: log when pipeline is skipped b/c it is not a pipeline . . . 
 			}
 
+			NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("YAY").setString("Oh No!");
+
 			// get camera stream the pipeline wants to use
 			VideoSource camera = null;
 			try {
@@ -86,15 +89,17 @@ public final class Main {
 				continue; // TODO: log when pipeline is skipped b/c there is no camera
 			}
 
-			final NetworkTable ntab = ntinst.getTable(PipelineFinder.getNetworkTable(inst));
-
 			// start thread for pipeline
 			if (CameraServerConfig.cameras.size() >= 1 && pipelineInstance instanceof AbstractVisionPipeline) {
-				VisionThread visionThread = new VisionThread(camera, inst, pipeline -> {
-					pipeline.log(ntab); // to ntab does not exist?
-				});
+				VisionThread visionThread = new VisionThread(camera, inst, pipeline -> {}) {
+					@Override
+					public void run() {
+						super.run();
+						System.out.println("I am running!");
+					}
+				};
 				visionThread.start();
-				System.out.println("Pipeline Started");
+				System.out.println("Pipeline Started | Is Pipe Alive: " + visionThread.isAlive());
 			}
 
 		}
@@ -140,6 +145,10 @@ public final class Main {
 	private static void printFailure(String msg) {
 		System.out.println(msg);
 		numPipelines--;
+	}
+
+	public synchronized static void print(String msg) {
+		System.out.println(msg);
 	}
 
 }

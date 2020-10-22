@@ -11,7 +11,7 @@ import util.AbstractVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
-@Pipeline(camera=0,ntab="SmartDashboard") // configures pipeline to read from camera 0 and to write to SmartDashboard
+@Pipeline(camera=0) // configures pipeline to read from camera 0 and to write to SmartDashboard
 // @Disabled
 public class MyPipeline implements AbstractVisionPipeline {
 
@@ -23,8 +23,10 @@ public class MyPipeline implements AbstractVisionPipeline {
     }
 
     @Override
-    public void log(NetworkTable ntab) {
-        
+    public void log() {
+        System.out.println("Call");
+        NetworkTable ntab = ntinst.getTable("SmartDashboard");
+        ntab.getEntry("Val").setNumber(val);
     }
 
 }
