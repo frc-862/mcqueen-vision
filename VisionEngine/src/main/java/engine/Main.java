@@ -70,13 +70,8 @@ public final class Main {
 			}
 
 			// cast pipeline instance
-			AbstractVisionPipeline inst = null;
-			try {
-				inst = (AbstractVisionPipeline) pipelineInstance;
-			} catch (Exception e) {
-				printFailure("The Pipeline is Not a Pipeline");
-				continue; // TODO: log when pipeline is skipped b/c it is not a pipeline . . . 
-			}
+			final AbstractVisionPipeline inst = (AbstractVisionPipeline) pipelineInstance;
+			
 
 			NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("YAY").setString("Oh No!");
 
@@ -91,15 +86,16 @@ public final class Main {
 
 			// start thread for pipeline
 			if (CameraServerConfig.cameras.size() >= 1 && pipelineInstance instanceof AbstractVisionPipeline) {
-				VisionThread visionThread = new VisionThread(camera, inst, pipeline -> {}) {
-					@Override
-					public void run() {
-						super.run();
-						System.out.println("I am running!");
-					}
-				};
-				visionThread.start();
-				System.out.println("Pipeline Started | Is Pipe Alive: " + visionThread.isAlive());
+
+				new Thread(() -> {
+					System.out.println("Pipeline Starting xxxxx");
+					VisionRunner<AbstractVisionPipeline> runner = new VisionRunner<AbstractVisionPipeline>(camera, inst, (pipeline) -> {
+						pipeline.log();
+					});
+					System.out.println("Pipeline Starting ooooo");
+					runner.runForever();
+				}).start();
+				System.out.println("Pipeline Started");
 			}
 
 		}
