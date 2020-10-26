@@ -19,13 +19,13 @@ public class MyPipeline implements AbstractVisionPipeline {
 
     @Override
     public void process(Mat mat) {
-        System.out.println("Process Call");
+        // System.out.println("Process Call");
         val += 1;
     }
 
     @Override
     public void log() {
-        System.out.println("Log Call");
+        // System.out.println("Log Call");
         NetworkTable ntab = ntinst.getTable("SmartDashboard");
         ntab.getEntry("Val").setNumber(val);
     }

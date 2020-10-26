@@ -29,80 +29,41 @@ public final class Main {
 
 		System.out.println("Application Started");
 
-		if (args.length > 0)
-			CameraServerConfig.configFile = args[0];
-
-		if (!CameraServerConfig.readConfig())
-			return;
-		
-		System.out.println("Config Read Successfully");
-
+		if (args.length > 0) CameraServerConfig.configFile = args[0];
+		if (!CameraServerConfig.readConfig()) return;
 		startNetworkTables();
-		System.out.println("Network Tables Started Successfully");
-
 		startCameras();
-		System.out.println("Cameras Started Successfully");
 
 		// get all the pipelines from Pipeline module
 		PipelineFinder pf = new PipelineFinder("pipelines");
 		Set<String> pipeNames = pf.retrieve();
 		numPipelines = pipeNames.size();
-		System.out.println(numPipelines + " Pipelines Retrieved");
 
-		// start all pipelines
-		for (String pipeName : pipeNames) {
-			System.out.println("Starting : " + pipeName);
-
-			Object pipelineInstance;
-			String className = pipeName;
-
-			// create instance of pipeline
+		// start pipelines
+		for(String pipelineName : pipeNames) {
 			try {
-				Class<?> classObj = Class.forName(className);
-				Constructor<?> constObj = classObj.getConstructor();
-				pipelineInstance = constObj.newInstance();
-			} catch (ClassNotFoundException cnfe) {
-				printFailure("The Pipeline Was Not Found");
-				continue; // TODO: log when pipeline is skipped b/c it doesn't exist . . .
-			} catch (Exception e) {
-				printFailure("The Pipeline Could Not Be Instantiated");
-				continue; // TODO: log when pipeline is skipped b/c unexpected error
-			}
-
-			// cast pipeline instance
-			final AbstractVisionPipeline inst = (AbstractVisionPipeline) pipelineInstance;
-			
-
-			NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("YAY").setString("Oh No!");
-
-			// get camera stream the pipeline wants to use
-			VideoSource camera = null;
-			try {
-				CameraServerConfig.cameras.get(PipelineFinder.getCamera(inst));
-			} catch(ArrayIndexOutOfBoundsException aioobe) {
-				printFailure("There is No Camera");
-				continue; // TODO: log when pipeline is skipped b/c there is no camera
-			}
-
-			// start thread for pipeline
-			if (CameraServerConfig.cameras.size() >= 1 && pipelineInstance instanceof AbstractVisionPipeline) {
-
+				Object pipelineInstance = Class.forName(pipelineName).getConstructor().newInstance();
+				final AbstractVisionPipeline inst = (AbstractVisionPipeline) pipelineInstance;
+				final VideoSource camera = CameraServerConfig.cameras.get(PipelineFinder.getCamera(inst));
 				new Thread(() -> {
-					System.out.println("Pipeline Starting xxxxx");
-					VisionRunner<AbstractVisionPipeline> runner = new VisionRunner<AbstractVisionPipeline>(camera, inst, (pipeline) -> {
-						pipeline.log();
-					});
-					System.out.println("Pipeline Starting ooooo");
+					VisionRunner<AbstractVisionPipeline> runner = new VisionRunner<AbstractVisionPipeline>(camera, inst, pipeline -> pipeline.log());
 					runner.runForever();
 				}).start();
-				System.out.println("Pipeline Started");
+			} catch(ArrayIndexOutOfBoundsException aioobe) {
+				printFailure("The Selected Camera Cannot Be Found");
+			} catch (ClassNotFoundException cnfe) {
+				printFailure("The Pipeline Was Not Found");
+			} catch(Exception e) {
+				printFailure("Something Weird Happened");
+			} finally {
+				continue;
 			}
-
 		}
 
+		// keep running program
 		System.out.println("Running " + numPipelines + " Pipelines");
 		runThreads();
-		System.out.println("Application Successfully Terminated");
+		
 	}
 
 	private static void startNetworkTables() {
