@@ -12,7 +12,7 @@ import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
 @Pipeline(camera=0) // configures pipeline to read from camera 0 and to write to SmartDashboard
-// @Disabled
+@Disabled
 public class MyPipeline implements AbstractVisionPipeline {
 
     public int val = 0;

@@ -50,11 +50,11 @@ public final class Main {
 					runner.runForever();
 				}).start();
 			} catch(ArrayIndexOutOfBoundsException aioobe) {
-				printFailure("The Selected Camera Cannot Be Found");
+				printFailure("The Selected Camera Cannot Be Found", pipelineName);
 			} catch (ClassNotFoundException cnfe) {
-				printFailure("The Pipeline Was Not Found");
+				printFailure("The Pipeline Was Not Found", pipelineName);
 			} catch(Exception e) {
-				printFailure("Something Weird Happened");
+				printFailure("Something Weird Happened", pipelineName);
 			} finally {
 				continue;
 			}
@@ -99,8 +99,8 @@ public final class Main {
 		}
 	}
 
-	private static void printFailure(String msg) {
-		System.out.println(msg);
+	private static void printFailure(String msg, String pipe) {
+		System.out.println(msg + " on " + pipe);
 		numPipelines--;
 	}
 

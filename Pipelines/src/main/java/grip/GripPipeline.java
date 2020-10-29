@@ -26,26 +26,31 @@ import org.opencv.objdetect.*;
 */
 public class GripPipeline {
 
-	private static HashMap<String, Object> params = new HashMap<>();
+	private HashMap<String, Object> params = new HashMap<>();
 	
-	public static void setParam(String name, Object val) {
+	public void setParam(String name, Object val) {
 		params.put(name, val);
 	}
 
-	public static Object getParam(String name) {
+	public Object getParam(String name) {
 		return params.get(name);
 	}
 
-	public static Set<String> getParamNames() {
+	public Set<String> getParamNames() {
 		return params.keySet();
 	}
 
 	//Outputs
-	private Mat blurOutput = new Mat();
+	private Mat blur0Output = new Mat();
+	private Mat blur1Output = new Mat();
 
+	
 	static {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);		
-		setParam("blurRadius", 9.649122807017552);
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);	}
+
+	public GripPipeline() {
+		setParam("blur0Radius", 9.649122807017552);
+		setParam("blur1Radius", 69.2982456140351);
 	}
 
 	/**
@@ -54,12 +59,21 @@ public class GripPipeline {
 	public void process(Mat source0) {
 		// Step Blur0:
 		// TODO: make this a class variable
-		Mat blurInput = source0;
+		Mat blur0Input = source0;
 		// TODO: make this a class variable
-		BlurType blurType = BlurType.get("Box Blur");
+		BlurType blur0Type = BlurType.get("Box Blur");
 		// TODO: make this a class variable
-		double blurRadius = (double) getParam("blurRadius");
-		blur(blurInput, blurType, blurRadius, blurOutput);
+		double blur0Radius = (double) getParam("blur0Radius");
+		blur(blur0Input, blur0Type, blur0Radius, blur0Output);
+
+		// Step Blur1:
+		// TODO: make this a class variable
+		Mat blur1Input = blur0Output;
+		// TODO: make this a class variable
+		BlurType blur1Type = BlurType.get("Gaussian Blur");
+		// TODO: make this a class variable
+		double blur1Radius = (double) getParam("blur1Radius");
+		blur(blur1Input, blur1Type, blur1Radius, blur1Output);
 
 	}
 
@@ -67,8 +81,16 @@ public class GripPipeline {
 	 * This method is a generated getter for the output of a Blur.
 	 * @return Mat output from Blur.
 	 */
-	public Mat blurOutput() {
-		return blurOutput;
+	public Mat blur0Output() {
+		return blur0Output;
+	}
+
+	/**
+	 * This method is a generated getter for the output of a Blur.
+	 * @return Mat output from Blur.
+	 */
+	public Mat blur1Output() {
+		return blur1Output;
 	}
 
 
