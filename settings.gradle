@@ -1,3 +1,4 @@
 rootProject.name = 'lightning-vision'
 include ':VisionEngine'
 include ':Pipelines'
+include ':Processing'

@@ -1,4 +1,4 @@
-package grip;
+package grip.examples;
 
 import java.io.File;
 import java.io.FileWriter;

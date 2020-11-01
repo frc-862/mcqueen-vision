@@ -1,4 +1,4 @@
-package pipelines;
+package pipelines.examples;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +11,11 @@ import util.AbstractVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
-@Pipeline(camera=0) // configures pipeline to read from camera 0 and to write to SmartDashboard
+/**
+ * Example vision pipeline. 
+ * Sends relevant data from generated GRIP pipeline to Network Table.
+ */
+@Pipeline(camera=0)
 @Disabled
 public class MyPipeline implements AbstractVisionPipeline {
 
@@ -19,13 +23,13 @@ public class MyPipeline implements AbstractVisionPipeline {
 
     @Override
     public void process(Mat mat) {
-        // System.out.println("Process Call");
+        System.out.println("Process Call");
         val += 1;
     }
 
     @Override
     public void log() {
-        // System.out.println("Log Call");
+        System.out.println("Log Call");
         NetworkTable ntab = ntinst.getTable("SmartDashboard");
         ntab.getEntry("Val").setNumber(val);
     }

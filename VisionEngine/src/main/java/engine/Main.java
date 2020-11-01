@@ -13,7 +13,6 @@ import java.util.Set;
 import org.opencv.core.Mat;
 
 import util.AbstractVisionPipeline;
-import pipelines.MyPipeline;
 import util.annotation.*;
 
 public final class Main {

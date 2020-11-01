@@ -2,8 +2,4 @@ plugins {
     id 'java'
 }
 
-dependencies {
-    implementation project(':Processing')
-}
-
 apply from: '../build.common.gradle'

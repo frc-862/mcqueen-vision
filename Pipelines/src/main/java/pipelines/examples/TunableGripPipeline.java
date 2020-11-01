@@ -1,4 +1,4 @@
-package pipelines;
+package pipelines.examples;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,12 +6,15 @@ import java.io.IOException;
 import org.opencv.core.Mat;
 
 import edu.wpi.first.networktables.NetworkTable;
-import grip.GripPipeline;
+import grip.examples.GripPipeline;
 import util.AbstractVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
-@Pipeline(camera=0) // configures pipeline to read from camera 0 and to write to SmartDashboard
+/**
+ * Example GRIP wrapper pipeline that updates GRIP values at runtime
+ */
+@Pipeline(camera=0)
 @Disabled
 public class TunableGripPipeline implements AbstractVisionPipeline {
 
@@ -19,7 +22,7 @@ public class TunableGripPipeline implements AbstractVisionPipeline {
     private NetworkTable ntab;
 
     public TunableGripPipeline() {
-        inst = new grip.GripPipeline();
+        inst = new GripPipeline();
         ntab = ntinst.getTable("SmartDashboard");
         for(String name : inst.getParamNames()) {
             ntab.getEntry(name).setNumber((double) inst.getParam(name));
