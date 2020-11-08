@@ -26,7 +26,12 @@ public class BallPipeline implements AbstractVisionPipeline {
 
     @Override
     public void process(Mat mat) {
+        long enter = System.nanoTime();
         inst.process(mat);
+        long elapsed = System.nanoTime() - enter;
+        ntab.getEntry("NanoSecsPerProcess_Ball").setNumber(elapsed);
+        ntab.getEntry("SecsPerProcess_Ball").setNumber(elapsed*1e-09);
+        ntab.getEntry("FramesProcessedPerSec_Ball").setNumber(1/(elapsed*1e-09));
     }
 
     @Override
