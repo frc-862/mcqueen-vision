@@ -1,8 +1,11 @@
 
 .settings/
 **/.settings/
+
 .vscode/
 **/.vscode/ 
+
+!install/VisionEngine.jar
 
 # Created by https://www.toptal.com/developers/gitignore/api/java,java-web,code-java,gradle,vscode,vs
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,java-web,code-java,gradle,vscode,vs
