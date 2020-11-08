@@ -1,4 +1,9 @@
 
+.settings/
+**/.settings/
+.vscode/
+**/.vscode/ 
+
 # Created by https://www.toptal.com/developers/gitignore/api/java,java-web,code-java,gradle,vscode,vs
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,java-web,code-java,gradle,vscode,vs
 
@@ -423,6 +428,3 @@ gradle-app.setting
 **/build/
 
 # End of https://www.toptal.com/developers/gitignore/api/java,java-web,code-java,gradle,vscode,vs
-
-.settings/*
-**/.settings/
