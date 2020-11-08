@@ -1,8 +1,10 @@
 package grip.examples;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +14,14 @@ import java.util.HashMap;
 
 import org.opencv.core.*;
 import org.opencv.core.Core.*;
-import org.opencv.features2d.FeatureDetector;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.*;
 import org.opencv.objdetect.*;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
 * GripPipeline class.
@@ -26,16 +32,35 @@ import org.opencv.objdetect.*;
 */
 public class GripPipeline {
 
+	//Pipeline values for cv methods
 	private HashMap<String, Object> params = new HashMap<>();
+
+	//Is pipeline mutable
+	private boolean isMutable = true;
 	
-	public void setParam(String name, Object val) {
+	/**
+	 * Initilize pipeline value
+	 * @param name name of value
+	 * @param val 
+	 */
+	public void initParam(String name, Object val) {
 		params.put(name, val);
 	}
 
+	/**
+	 * Accessor for single parameter
+	 * @param name name of parameter
+	 * @return {@code Object} with parameter value
+	 */
 	public Object getParam(String name) {
+		if(isMutable) updateParams();
 		return params.get(name);
 	}
 
+	/**
+	 * Accessor for all parameter names
+	 * @return {@code Set<String>} of all parameter names
+	 */
 	public Set<String> getParamNames() {
 		return params.keySet();
 	}
@@ -46,11 +71,86 @@ public class GripPipeline {
 
 	
 	static {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);	}
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
+    
+	//Pipeline JSON name
+	private static final String configFile = "GripPipelineParams.json";
+	
+	//Pipeline JSON root directory
+	private static final String configDir = "/home/pi/pipeline-params/";
+	
+	//Full Pipeline JSON file path
+	private static final String configFPath = configDir + configFile;
 
-	public GripPipeline() {
-		setParam("blur0Radius", 9.649122807017552);
-		setParam("blur1Radius", 69.2982456140351);
+	/**
+	 * This is a method that will retrieve updated pipeline values from the pipeline's JSON file
+	 */
+	private void updateParams() {
+		Path fpath = Paths.get(configFPath);
+		JsonElement top;
+		try {
+			//Read JSON
+			top = new JsonParser().parse(Files.newBufferedReader(fpath));
+			if(!top.isJsonObject()) {
+				Files.deleteIfExists(fpath);
+				throw new IOException();
+			}
+			JsonObject obj = top.getAsJsonObject();
+			//Set Parameter Map To Values in JSON
+			this.params = new Gson().fromJson(obj, HashMap.class);
+		} catch(IOException ioe) {
+            System.out.println("Could not update pipeline parameters");
+            this.isMutable = false;
+		}
+	}
+
+	/**
+	 * Default constructor sets pipeline to mutable by default
+	 */
+	public GripPipeline() { this(true); }
+
+	/**
+	 * Constructor 
+	 */
+	public GripPipeline(boolean isMutable) {
+
+		//JSON path
+        Path fpath = Paths.get(configFPath);
+        
+        //JSON dir
+        Path fdir = Paths.get(configDir);
+
+		//Is pipeline mutable
+		this.isMutable = isMutable;
+
+		//Read JSON
+		JsonElement top;
+		try {
+			top = new JsonParser().parse(Files.newBufferedReader(fpath));
+			if(!top.isJsonObject()) {
+				Files.deleteIfExists(fpath);
+				throw new IOException();
+			}
+			JsonObject obj = top.getAsJsonObject();
+			//Set Parameter Map To Values in JSON
+			this.params = new Gson().fromJson(obj, HashMap.class);
+		} catch(IOException ioe) {
+			//If JSON does not exist
+			try {
+				//Init default pipeline values
+				initParam("blur0Radius", 9.649122807017552);
+				initParam("blur1Radius", 69.2982456140351);
+                //Create JSON file
+                if(!Files.isDirectory(fdir)) Files.createDirectory(fdir);
+                if(!Files.exists(fpath)) Files.createFile(fpath);
+				//Write default values
+				Files.write(fpath, new Gson().toJson(this.params).getBytes(StandardCharsets.UTF_8));
+			} catch (Exception e) {
+				System.out.println("New File Could Not Be Created - Pipeline Will Continue Running");
+			}
+		}
+
 	}
 
 	/**
@@ -58,20 +158,14 @@ public class GripPipeline {
 	 */
 	public void process(Mat source0) {
 		// Step Blur0:
-		// TODO: make this a class variable
 		Mat blur0Input = source0;
-		// TODO: make this a class variable
 		BlurType blur0Type = BlurType.get("Box Blur");
-		// TODO: make this a class variable
 		double blur0Radius = (double) getParam("blur0Radius");
 		blur(blur0Input, blur0Type, blur0Radius, blur0Output);
 
 		// Step Blur1:
-		// TODO: make this a class variable
 		Mat blur1Input = blur0Output;
-		// TODO: make this a class variable
 		BlurType blur1Type = BlurType.get("Gaussian Blur");
-		// TODO: make this a class variable
 		double blur1Radius = (double) getParam("blur1Radius");
 		blur(blur1Input, blur1Type, blur1Radius, blur1Output);
 
@@ -163,4 +257,5 @@ public class GripPipeline {
 
 
 }
+
 

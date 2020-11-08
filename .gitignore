@@ -423,3 +423,6 @@ gradle-app.setting
 **/build/
 
 # End of https://www.toptal.com/developers/gitignore/api/java,java-web,code-java,gradle,vscode,vs
+
+.settings/*
+**/.settings/

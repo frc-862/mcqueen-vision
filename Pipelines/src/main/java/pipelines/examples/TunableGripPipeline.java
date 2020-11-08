@@ -15,7 +15,7 @@ import util.annotation.Pipeline;
  * Example GRIP wrapper pipeline that updates GRIP values at runtime
  */
 @Pipeline(camera=0)
-@Disabled
+// @Disabled
 public class TunableGripPipeline implements AbstractVisionPipeline {
 
     private GripPipeline inst;
@@ -31,13 +31,18 @@ public class TunableGripPipeline implements AbstractVisionPipeline {
 
     @Override
     public void process(Mat mat) {
+        long enter = System.nanoTime();
         inst.process(mat);
+        long elapsed = System.nanoTime() - enter;
+        ntab.getEntry("NanoSecsPerProcess").setNumber(elapsed);
+        ntab.getEntry("SecsPerProcess").setNumber(elapsed*1e-09);
+        ntab.getEntry("ProcessPerSec").setNumber(1/(elapsed*1e-09));
     }
 
     @Override
     public void log() {
         for(String name : inst.getParamNames()) {
-            inst.setParam(name, ntab.getEntry(name).getValue().getDouble());
+            inst.initParam(name, ntab.getEntry(name).getValue().getDouble());
         }
     }
 

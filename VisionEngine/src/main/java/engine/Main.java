@@ -54,8 +54,6 @@ public final class Main {
 				printFailure("The Pipeline Was Not Found", pipelineName);
 			} catch(Exception e) {
 				printFailure("Something Weird Happened", pipelineName);
-			} finally {
-				continue;
 			}
 		}
 
