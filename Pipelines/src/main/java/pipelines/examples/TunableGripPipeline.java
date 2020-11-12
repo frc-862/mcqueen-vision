@@ -7,7 +7,7 @@ import org.opencv.core.Mat;
 
 import edu.wpi.first.networktables.NetworkTable;
 import grip.examples.GripPipeline;
-import util.AbstractVisionPipeline;
+import util.LightningVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
@@ -15,8 +15,8 @@ import util.annotation.Pipeline;
  * Example GRIP wrapper pipeline that updates GRIP values at runtime
  */
 @Pipeline(camera=0)
-@Disabled
-public class TunableGripPipeline implements AbstractVisionPipeline {
+// @Disabled
+public class TunableGripPipeline implements LightningVisionPipeline {
 
     private GripPipeline inst;
     private NetworkTable ntab;

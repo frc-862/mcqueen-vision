@@ -7,7 +7,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.*;
 
 import edu.wpi.first.networktables.NetworkTable;
-import util.AbstractVisionPipeline;
+import util.LightningVisionPipeline;
 import util.annotation.*;
 
 public class PipelineFinder {
@@ -36,7 +36,7 @@ public class PipelineFinder {
         return typeNames;
     }
 
-    public static int getCamera(AbstractVisionPipeline pipe) {
+    public static int getCamera(LightningVisionPipeline pipe) {
         Pipeline p = pipe.getClass().getAnnotation(Pipeline.class);
         int camera = p.camera();
         return camera;

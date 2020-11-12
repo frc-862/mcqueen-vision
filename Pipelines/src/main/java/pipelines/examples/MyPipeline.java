@@ -7,7 +7,7 @@ import org.opencv.core.Mat;
 
 import edu.wpi.first.networktables.NetworkTable;
 
-import util.AbstractVisionPipeline;
+import util.LightningVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
@@ -17,7 +17,7 @@ import util.annotation.Pipeline;
  */
 @Pipeline(camera=0)
 @Disabled
-public class MyPipeline implements AbstractVisionPipeline {
+public class MyPipeline implements LightningVisionPipeline {
 
     public int val = 0;
 

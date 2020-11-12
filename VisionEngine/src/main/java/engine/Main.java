@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.opencv.core.Mat;
 
-import util.AbstractVisionPipeline;
+import util.LightningVisionPipeline;
 import util.annotation.*;
 
 public final class Main {
@@ -42,10 +42,10 @@ public final class Main {
 		for(String pipelineName : pipeNames) {
 			try {
 				Object pipelineInstance = Class.forName(pipelineName).getConstructor().newInstance();
-				final AbstractVisionPipeline inst = (AbstractVisionPipeline) pipelineInstance;
+				final LightningVisionPipeline inst = (LightningVisionPipeline) pipelineInstance;
 				final VideoSource camera = CameraServerConfig.cameras.get(PipelineFinder.getCamera(inst));
 				new Thread(() -> {
-					VisionRunner<AbstractVisionPipeline> runner = new VisionRunner<AbstractVisionPipeline>(camera, inst, pipeline -> pipeline.log());
+					VisionRunner<LightningVisionPipeline> runner = new VisionRunner<LightningVisionPipeline>(camera, inst, pipeline -> pipeline.log());
 					runner.runForever();
 				}).start();
 			} catch(ArrayIndexOutOfBoundsException aioobe) {
