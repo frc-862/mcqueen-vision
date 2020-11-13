@@ -15,7 +15,7 @@ import util.annotation.Pipeline;
  * Example GRIP wrapper pipeline that updates GRIP values at runtime
  */
 @Pipeline(camera=0)
-// @Disabled
+@Disabled
 public class TunableGripPipeline implements LightningVisionPipeline {
 
     private GripPipeline inst;

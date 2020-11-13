@@ -10,14 +10,28 @@ import edu.wpi.first.networktables.NetworkTable;
 import util.LightningVisionPipeline;
 import util.annotation.*;
 
+/**
+ * Class to scan for pipelines to be implemented.
+ */
 public class PipelineFinder {
 
+    /**
+     * Reflections object to reflect pipelines
+     * @see <a href="https://github.com/ronmamo/reflections">Reflections GitHub</a>
+     */
     private Reflections reflections;
 
+    /**
+     * Constructor initilizes reflections object
+     */
     public PipelineFinder(String pkg) {
         reflections = new Reflections(pkg, new TypeAnnotationsScanner(), new SubTypesScanner());
     }
 
+    /**
+     * Gets all declared pipelines as a {@code Set<String>} object
+     * @return the names of the declared pipelines in a set
+     */
     public Set<String> retrieve() {
 
         Set<Class<?>> types = reflections.getTypesAnnotatedWith(Pipeline.class);
@@ -36,6 +50,11 @@ public class PipelineFinder {
         return typeNames;
     }
 
+    /**
+     * Gets the configured camera for a given pipeline
+     * @param pipe Pipeline name
+     * @return the camera port (an {@code int}) of the camera the pipeline wants to run on
+     */
     public static int getCamera(LightningVisionPipeline pipe) {
         Pipeline p = pipe.getClass().getAnnotation(Pipeline.class);
         int camera = p.camera();

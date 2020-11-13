@@ -21,8 +21,7 @@ public final class Main {
 
 	private static int numPipelines = 0;
 
-	public Main() {
-	}
+	public Main() {}
 
 	public static void main(String... args) {
 

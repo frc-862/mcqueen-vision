@@ -13,7 +13,7 @@ import util.annotation.Disabled;
  * Sends relevant data from generated GRIP pipeline to Network Table.
  */
 @Pipeline(camera=0)
-// @Disabled
+@Disabled
 public class BallPipeline implements LightningVisionPipeline {
 
     private YellowBallSeeker inst;
