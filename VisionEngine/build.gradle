@@ -9,7 +9,6 @@ apply plugin: 'com.github.johnrengelman.shadow'
 mainClassName = 'engine.Main'
 
 dependencies {
-    implementation 'org.reflections:reflections:0.9.12'
     implementation project(':Pipelines')
     implementation project(':Processing')
 }

@@ -1,4 +1,4 @@
-package engine;
+package util;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,18 +13,18 @@ import util.annotation.*;
 /**
  * Class to scan for pipelines to be implemented.
  */
-public class PipelineFinder {
+public class PipelineProcesser {
 
     /**
      * Reflections object to reflect pipelines
-     * @see <a href="https://github.com/ronmamo/reflections">Reflections GitHub</a>
+     * @see <a href="https://github.com/ronmamo/reflections">Reflections on GitHub</a>
      */
     private Reflections reflections;
 
     /**
      * Constructor initilizes reflections object
      */
-    public PipelineFinder(String pkg) {
+    public PipelineProcesser(String pkg) {
         reflections = new Reflections(pkg, new TypeAnnotationsScanner(), new SubTypesScanner());
     }
 

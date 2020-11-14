@@ -21,8 +21,15 @@ import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class CameraServerConfig {
+
+	/**
+	 * Configuration file path
+	 */
 	public static String configFile = "/boot/frc.json";
 
+	/**
+	 * Named settings for camera configuration
+	 */
 	@SuppressWarnings("MemberName")
 	public static class CameraConfig {
 		public String name;
@@ -31,16 +38,39 @@ public class CameraServerConfig {
 		public JsonElement streamConfig;
 	}
 
+	/**
+	 * Named settings for switched camera configuration
+	 */
 	@SuppressWarnings("MemberName")
 	public static class SwitchedCameraConfig {
 		public String name;
 		public String key;
 	};
 
+	/**
+	 * Team number
+	 */
 	public static int team;
+
+	/**
+	 * Flag used to determine if program needs to run network tables server
+	 * or connect to a robot server
+	 */
 	public static boolean server;
+
+	/**
+	 * Camera configuration files
+	 */
 	public static List<CameraConfig> cameraConfigs = new ArrayList<>();
+
+	/**
+	 * Switched camera configuration files
+	 */
 	public static List<SwitchedCameraConfig> switchedCameraConfigs = new ArrayList<>();
+
+	/**
+	 * Camera video sources
+	 */
 	public static List<VideoSource> cameras = new ArrayList<>();
 
 	/**
@@ -220,4 +250,5 @@ public class CameraServerConfig {
 
 		return server;
 	}
+	
 }

@@ -1,24 +1,24 @@
 package engine;
 
 import edu.wpi.cscore.VideoSource;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.vision.VisionRunner;
-import edu.wpi.first.vision.VisionThread;
 
-import java.lang.reflect.Constructor;
 import java.util.Set;
 
-import org.opencv.core.Mat;
-
 import util.LightningVisionPipeline;
-import util.annotation.*;
+import util.PipelineProcesser;
 
 public final class Main {
 
+	/**
+	 * Network Tables Instance
+	 */
 	private static NetworkTableInstance ntinst;
 
+	/**
+	 * Number of pipelines configured
+	 */
 	private static int numPipelines = 0;
 
 	public Main() {}
@@ -33,7 +33,7 @@ public final class Main {
 		startCameras();
 
 		// get all the pipelines from Pipeline module
-		PipelineFinder pf = new PipelineFinder("pipelines");
+		PipelineProcesser pf = new PipelineProcesser("pipelines");
 		Set<String> pipeNames = pf.retrieve();
 		numPipelines = pipeNames.size();
 
@@ -42,7 +42,7 @@ public final class Main {
 			try {
 				Object pipelineInstance = Class.forName(pipelineName).getConstructor().newInstance();
 				final LightningVisionPipeline inst = (LightningVisionPipeline) pipelineInstance;
-				final VideoSource camera = CameraServerConfig.cameras.get(PipelineFinder.getCamera(inst));
+				final VideoSource camera = CameraServerConfig.cameras.get(PipelineProcesser.getCamera(inst));
 				new Thread(() -> {
 					VisionRunner<LightningVisionPipeline> runner = new VisionRunner<LightningVisionPipeline>(camera, inst, pipeline -> pipeline.log());
 					runner.runForever();
@@ -62,6 +62,10 @@ public final class Main {
 		
 	}
 
+	/**
+	 * Starts and configures network tables. Starts a server, or connects to robot 
+	 * as a client depending on configuration file in {@link engine.CameraServerConfig}
+	 */
 	private static void startNetworkTables() {
 		ntinst = NetworkTableInstance.getDefault();
 		if (CameraServerConfig.server) {
@@ -73,6 +77,9 @@ public final class Main {
 		}
 	}
 
+	/**
+	 * Starts all cameras, normal and switched
+	 */
 	private static void startCameras() {
 		// start cameras & switch cameras
 		for (CameraServerConfig.CameraConfig config : CameraServerConfig.cameraConfigs) {
@@ -84,6 +91,9 @@ public final class Main {
 		}
 	}
 
+	/**
+	 * Runs main thread until all threads are terminated
+	 */
 	private static void runThreads() {
 		for (;;) {
 			try {
@@ -95,13 +105,14 @@ public final class Main {
 		}
 	}
 
+	/**
+	 * Print error to console in the event a pipeline cannot be run
+	 * @param msg Error message
+	 * @param pipe Pipeline on which the error occurred
+	 */
 	private static void printFailure(String msg, String pipe) {
 		System.out.println(msg + " on " + pipe);
 		numPipelines--;
-	}
-
-	public synchronized static void print(String msg) {
-		System.out.println(msg);
 	}
 
 }
