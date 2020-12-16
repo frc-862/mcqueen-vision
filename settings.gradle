@@ -1,4 +1,4 @@
-rootProject.name = 'lightning-vision'
+rootProject.name = 'mcqueen-vision'
 include ':VisionEngine'
 include ':Pipelines'
 include ':Processing'
