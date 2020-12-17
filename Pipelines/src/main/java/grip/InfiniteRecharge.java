@@ -1,4 +1,4 @@
-package frcvision;
+package grip;
 
 import java.io.File;
 import java.io.FileWriter;

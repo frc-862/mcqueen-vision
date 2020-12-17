@@ -21,7 +21,7 @@ Pipelines are written here. It is recommended that pipelines generated from [GRI
 ```java
 @Pipeline(camera=0)
 @Disabled
-public class GRIPPipelineWrapper implements AbstractVisionPipeline {
+public class GRIPPipelineWrapper implements LightningVisionPipeline {
     private GRIPPipeline inst;
     private NetworkTable ntab;
 
