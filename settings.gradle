@@ -1,0 +1,4 @@
+rootProject.name = 'mcqueen-vision'
+include ':VisionEngine'
+include ':Pipelines'
+include ':Processing'

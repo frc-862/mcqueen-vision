@@ -1,0 +1,17 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        flatDir {
+            dirs '/usr/local/frc/java', '.'
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        flatDir {
+            dirs '/usr/local/frc/java', '.'
+        }
+    }
+}
