@@ -1,8 +1,5 @@
 package pipelines.examples;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.opencv.core.Mat;
 
 import edu.wpi.first.networktables.NetworkTable;

@@ -2,7 +2,7 @@ package engine;
 
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.vision.VisionRunner;
+import edu.wpi.first.vision.VisionThread;
 
 import java.util.Set;
 
@@ -42,11 +42,9 @@ public final class Main {
 			try {
 				Object pipelineInstance = Class.forName(pipelineName).getConstructor().newInstance();
 				final LightningVisionPipeline inst = (LightningVisionPipeline) pipelineInstance;
-				final VideoSource camera = CameraServerConfig.cameras.get(PipelineProcesser.getCamera(inst));
-				new Thread(() -> {
-					VisionRunner<LightningVisionPipeline> runner = new VisionRunner<LightningVisionPipeline>(camera, inst, pipeline -> pipeline.log());
-					runner.runForever();
-				}).start();
+                final VideoSource camera = CameraServerConfig.cameras.get(PipelineProcesser.getCamera(inst));
+                VisionThread pipelineThread = new VisionThread(camera, inst, pipeline -> pipeline.log());
+                pipelineThread.start();
 			} catch(ArrayIndexOutOfBoundsException aioobe) {
 				printFailure("The Selected Camera Cannot Be Found", pipelineName);
 			} catch (ClassNotFoundException cnfe) {
