@@ -8,6 +8,7 @@ import grip.InfiniteRecharge;
 import util.LightningVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
+import java.lang.Math;
 
 @Pipeline(camera=0)
 public class PowerPortPipeline implements LightningVisionPipeline {
@@ -34,6 +35,9 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private double TargetRowBConstant = 4.4264;
     private double TargetRowCConstant = -832.33;
 
+    private int InputCameraImageRows = 0;
+    private int InputCameraImageCols = 0;
+
     public PowerPortPipeline() {
         inst = new InfiniteRecharge();
         ntab = ntinst.getTable("Vision");
@@ -41,6 +45,9 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     @Override
     public void process(Mat mat) {
+        // Pulling out image size to use later
+        InputCameraImageRows = mat.rows;
+        InputCameraImageCols = mat.cols;
         inst.process(mat);
     }
 
@@ -48,22 +55,26 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     public void log() {
         // Log to Network Table `ntab` here.
 
+        if ((InputCameraImageRows == 0)||(InputCameraImageCols == 0)) {
+            return; // If process hasn't defined image size there is nothing to do
+        }
+
         int x, y, height, count;
         double elapsed;
 
         int counter = 0;
 
-        ntab.getEntry("FieldOfViewVert").setDouble(43.30);
-        ntab.getEntry("FieldOfViewHoriz").setDouble(70.42);
-        ntab.getEntry("TargetHeightRatio").setDouble(1.0);
-        ntab.getEntry("TargetRatioThreshold").setDouble(100.0);
-        ntab.getEntry("TargetDistanceThreshold").setDouble(0.5);
-        ntab.getEntry("TargetHeightAConstant").setDouble(0.0084);
-        ntab.getEntry("TargetHeightBConstant").setDouble(-1.4737);
-        ntab.getEntry("TargetHeightCConstant").setDouble(76.27);
-        ntab.getEntry("TargetRowAConstant").setDouble(-0.0056);
-        ntab.getEntry("TargetRowBConstant").setDouble(4.4264);
-        ntab.getEntry("TargetRowCConstant").setDouble(-832.33);
+        ntab.getEntry("FieldOfViewVert").setDouble(FieldOfViewVert);
+        ntab.getEntry("FieldOfViewHoriz").setDouble(FieldOfViewHoriz);
+        ntab.getEntry("TargetHeightRatio").setDouble(TargetHeightRatio);
+        ntab.getEntry("TargetRatioThreshold").setDouble(TargetRatioThreshold);
+        ntab.getEntry("TargetDistanceThreshold").setDouble(TargetDistanceThreshold);
+        ntab.getEntry("TargetHeightAConstant").setDouble(TargetHeightAConstant);
+        ntab.getEntry("TargetHeightBConstant").setDouble(TargetHeightBConstant);
+        ntab.getEntry("TargetHeightCConstant").setDouble(TargetHeightCConstant);
+        ntab.getEntry("TargetRowAConstant").setDouble(TargetRowAConstant);
+        ntab.getEntry("TargetRowBConstant").setDouble(TargetRowBConstant);
+        ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
         // do something with pipeline results
         ArrayList<MatOfPoint> contours = findContoursOutput();
@@ -125,8 +136,8 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 					double tempHeight = rect.height;
                     int tempCenterX = (rect.x + (rect.width / 2));
                     int tempCenterY = (rect.y + (rect.height / 2));
-					if (checkTargetProportion(temp)) {
-						float tempDist = getInterpolatedDistanceFromTargetHeight(temp.height);
+					if (checkTargetProportion(rect.height, tempCenterY)) {
+						float tempDist = getInterpolatedDistanceFromTargetHeight(rect.height);
 						float tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
 						if (distancesInBounds(tempDist, tempDistTest)) {
 							TargetDistance = tempDist;
@@ -134,7 +145,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 							TargetWidth = rect.width;
 							TargetCenterX = (rect.x + (rect.width / 2));
 							TargetCenterY = (rect.y + (rect.height / 2));
-                            TargetAngle = getAngleFromTarget(target, GetSource()->cols);
+                            TargetAngle = getAngleFromTarget(tempCenterX, InputCameraImageCols);
                             TargetValid = true;
 						}
 					}
@@ -146,37 +157,37 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     }
 
-    float getInterpolatedDistanceFromTargetHeight(float f_targetHeight)
+    double getInterpolatedDistanceFromTargetHeight(double f_targetHeight)
     {
         // distance = a(height^2) + b(height) + c
         // a, b, and c are constants derived from images at distances
-        return ((fTargetHeight_a * f_targetHeight * f_targetHeight) + (fTargetHeight_b * f_targetHeight) + fTargetHeight_c);
+        return ((TargetHeightAConstant * f_targetHeight * f_targetHeight) + (TargetHeightBConstant * f_targetHeight) + TargetHeightCConstant);
     }
 
-    float getInterpolatedDistanceFromTargetRow(float f_targetRow)
+    double getInterpolatedDistanceFromTargetRow(double f_targetRow)
     {
         // distance = a(height^2) + b(height) + c
         // a, b, and c are constants derived from images at distances
-        return ((fTargetRow_a * f_targetRow * f_targetRow) + (fTargetRow_b * f_targetRow) + fTargetRow_c);
+        return ((TargetRowAConstant * f_targetRow * f_targetRow) + (TargetRowBConstant * f_targetRow) + TargetRowCConstant);
     }
 
-    float getAngleFromTarget(tf::Target f_target, int cols)
+    double getAngleFromTarget(double targetCenterCol, double imageWidthCols)
     {
         // Returns a number in degrees
         // Positive angle - right turn
         // Negative angle - left turn
-        return (((f_target.center.x - (cols / 2)) / cols) * fFieldOfViewHorizRad) * (180.f / M_PI);
+        return (targetCenterCol - (imageWidthCols / 2)) * (FieldOfViewHoriz / imageWidthCols);
     }
 
-    bool checkTargetProportion(tf::Target f_targetRect)
+    bool checkTargetProportion(int targetBoxHeight, int targetCenterRow)
     {
-        float ratio = (float)f_targetRect.height / (float)f_targetRect.center.y;
-        return ((std::abs(ratio) - fTargetHeightRatio) < fTargetRatioThreshold);
+        float ratio = (float)targetBoxHeight / (float)targetCenterRow;
+        return ((Math.abs(ratio) - TargetHeightRatio) < TargetRatioThreshold);
     }
 
-    bool distancesInBounds(float dist1, float dist2) {
+    bool distancesInBounds(double dist1, double dist2) {
         return true; // Disable to implement for testing
-        // return (std::abs(dist1 - dist2) < fTargetDistanceThreshold);
+        // return (Math.abs(dist1 - dist2) < TargetDistanceThreshold);
     }
 }
 
