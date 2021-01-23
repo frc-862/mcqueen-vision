@@ -3,6 +3,10 @@ package pipelines;
 import java.util.ArrayList;
 
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
+
 import edu.wpi.first.networktables.NetworkTable;
 import grip.InfiniteRecharge;
 import util.LightningVisionPipeline;
@@ -15,7 +19,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private InfiniteRecharge inst;
     private NetworkTable ntab;
 
-    private bool TargetValid;
+    private boolean TargetValid;
     private int TargetCenterX;
     private int TargetCenterY;
     private double TargetHeight;
@@ -46,8 +50,8 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     @Override
     public void process(Mat mat) {
         // Pulling out image size to use later
-        InputCameraImageRows = mat.rows;
-        InputCameraImageCols = mat.cols;
+        InputCameraImageRows = mat.rows();
+        InputCameraImageCols = mat.cols();
         inst.process(mat);
     }
 
@@ -77,18 +81,18 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
         // do something with pipeline results
-        ArrayList<MatOfPoint> contours = findContoursOutput();
+        ArrayList<MatOfPoint> contours = inst.findContoursOutput();
         count = contours.size();
 
-        ntab.getEntry("VisionFound").setInt(count);
+        ntab.getEntry("VisionFound").setNumber(count);
         
         
         findBestTarget(contours);
 
         if (!TargetValid) {
             
-            ntab.getEntry("VisionX").setInt(0)
-            ntab.getEntry("VisionY").setInt(0);
+            ntab.getEntry("VisionX").setNumber(0);
+            ntab.getEntry("VisionY").setNumber(0);
             ntab.getEntry("VisionHeight").setDouble(0);
             ntab.getEntry("VisionDistance").setDouble(0);
             ntab.getEntry("VisionAngle").setDouble(0);
@@ -101,15 +105,16 @@ public class PowerPortPipeline implements LightningVisionPipeline {
             // height = target.height;
            
 
-            ntab.getEntry("VisionX").setInt(TargetCenterX);
-            ntab.getEntry("VisionY").setInt(TargetCenterY);
-            ntab.getEntry("VisionHeight").setInt(TargetHeight);
+            ntab.getEntry("VisionX").setNumber(TargetCenterX);
+            ntab.getEntry("VisionY").setNumber(TargetCenterY);
+            ntab.getEntry("VisionHeight").setNumber(TargetHeight);
             ntab.getEntry("VisionDistance").setDouble(TargetDistance);
             ntab.getEntry("VisionAngle").setDouble(TargetAngle);
             ntab.getEntry("VisionDelay").setDouble(0.1); // FIXTHIS DELAY
         }
     }
     
+
     public void findBestTarget (ArrayList<MatOfPoint> contours) {
 		// Look at target list and return most likely power port target entry
         TargetValid = false;
@@ -132,13 +137,13 @@ public class PowerPortPipeline implements LightningVisionPipeline {
                 Rect rect = Imgproc.boundingRect(contours.get(i));
 
                 // If new target area is bigger than current values then do next checks
-				if ((rect.area() > TargetWidth * TargetHeight) {
+				if ((rect.area() > TargetWidth * TargetHeight)) {
 					double tempHeight = rect.height;
                     int tempCenterX = (rect.x + (rect.width / 2));
                     int tempCenterY = (rect.y + (rect.height / 2));
 					if (checkTargetProportion(rect.height, tempCenterY)) {
-						float tempDist = getInterpolatedDistanceFromTargetHeight(rect.height);
-						float tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
+						double tempDist = getInterpolatedDistanceFromTargetHeight(rect.height);
+						double tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
 						if (distancesInBounds(tempDist, tempDistTest)) {
 							TargetDistance = tempDist;
 							TargetHeight = rect.height;
@@ -179,13 +184,13 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         return (targetCenterCol - (imageWidthCols / 2)) * (FieldOfViewHoriz / imageWidthCols);
     }
 
-    bool checkTargetProportion(int targetBoxHeight, int targetCenterRow)
+    boolean checkTargetProportion(int targetBoxHeight, int targetCenterRow)
     {
         float ratio = (float)targetBoxHeight / (float)targetCenterRow;
         return ((Math.abs(ratio) - TargetHeightRatio) < TargetRatioThreshold);
     }
 
-    bool distancesInBounds(double dist1, double dist2) {
+    boolean distancesInBounds(double dist1, double dist2) {
         return true; // Disable to implement for testing
         // return (Math.abs(dist1 - dist2) < TargetDistanceThreshold);
     }
