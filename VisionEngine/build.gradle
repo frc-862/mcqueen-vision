@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '4.0.3' apply false
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'engine.Main'
+
+dependencies {
+    implementation project(':Pipelines')
+    implementation project(':Processing')
+}
+
+apply from: '../build.common.gradle'
+
+task moveVisionEngine(type: Copy) {
+    from 'build/libs/VisionEngine.jar'
+    into '../install'
+}
+
+build.finalizedBy(moveVisionEngine)
