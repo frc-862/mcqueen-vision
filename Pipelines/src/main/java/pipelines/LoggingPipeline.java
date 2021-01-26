@@ -1,0 +1,57 @@
+package pipelines;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+
+import util.LightningVisionPipeline;
+import util.annotation.Pipeline;
+
+@Pipeline (camera=0)
+public class LoggingPipeline implements LightningVisionPipeline {
+
+    // Potentially log multiple cameras in same run (i.e. front facing camera, back facing camera) 
+    // Make constructor to create file path and mount USB drive
+    // Counter in process to update what image string you're processing
+    // Use opencv imwrite to write image with process name to a file on usb drive
+
+    private int counter = 0;
+    private long unixTime = System.currentTimeMillis() / 1000L;
+
+    @Override
+    public void process(Mat arg0) {
+        // TODO Auto-generated method stub
+
+        // Create if statement to check if path for image logging already exists. If not then create the proper path.
+
+        String pathName = "/mnt/log/img/" + unixTime + "/";
+        Path logFileDir = Paths.get(pathName);
+
+        if (Files.notExists(logFileDir)) {
+            File theDir = new File(logFileDir);
+        }
+
+        // Log image files in the newly created directory
+
+        String fileName = pathName + counter + ".png";
+
+        Imgcodecs imageCodec = new Imgcodecs();
+
+        Imgcodecs.imwrite(fileName, arg0);
+
+        counter++;
+
+    }
+
+    @Override
+    public void log() {
+        // TODO Auto-generated method stub
+
+    }
+
+
+    
+}
