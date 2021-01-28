@@ -28,7 +28,7 @@ public class LoggingPipeline implements LightningVisionPipeline {
 
     public LoggingPipeline() {
         unixTime = System.currentTimeMillis() / 1000L;
-        pathName = "/mnt/log/img/log-" + unixTime + "/";
+        pathName = "/home/pi/logs/log-" + unixTime + "/"; // "/mnt/log/img/log-" + unixTime + "/";
         logFileDir = Paths.get(pathName);
         System.out.println("Path Name: " + pathName);
     }
