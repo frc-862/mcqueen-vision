@@ -1,5 +1,6 @@
 package pipelines;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,8 +31,8 @@ public class LoggingPipeline implements LightningVisionPipeline {
         String pathName = "/mnt/log/img/" + unixTime + "/";
         Path logFileDir = Paths.get(pathName);
 
-        if (Files.notExists(logFileDir)) {
-            File theDir = new File(logFileDir);
+        if (!Files.exists(logFileDir)) {
+            File theDir = new File(pathName);
         }
 
         // Log image files in the newly created directory
