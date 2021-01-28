@@ -1,6 +1,7 @@
 package pipelines;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,26 +21,33 @@ public class LoggingPipeline implements LightningVisionPipeline {
     // Use opencv imwrite to write image with process name to a file on usb drive
 
     private int counter = 0;
-    private long unixTime = System.currentTimeMillis() / 1000L;
+    private long unixTime;
+    String pathName;
+    Path logFileDir;
+
+
+    public LoggingPipeline() {
+        unixTime = System.currentTimeMillis() / 1000L;
+        pathName = "/mnt/log/img/log-" + unixTime + "/";
+        logFileDir = Paths.get(pathName);
+        System.out.println("Path Name: " + pathName);
+    }
 
     @Override
     public void process(Mat arg0) {
-        // TODO Auto-generated method stub
-
         // Create if statement to check if path for image logging already exists. If not then create the proper path.
 
-        String pathName = "/mnt/log/img/" + unixTime + "/";
-        Path logFileDir = Paths.get(pathName);
-
-        if (!Files.exists(logFileDir)) {
-            File theDir = new File(pathName);
+        try {
+            if (!Files.exists(logFileDir)) {
+                Files.createDirectories(logFileDir);
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
 
         // Log image files in the newly created directory
 
-        String fileName = pathName + counter + ".png";
-
-        Imgcodecs imageCodec = new Imgcodecs();
+        String fileName = pathName + "raw-frame-" + counter + ".jpg";
 
         Imgcodecs.imwrite(fileName, arg0);
 
@@ -48,10 +56,7 @@ public class LoggingPipeline implements LightningVisionPipeline {
     }
 
     @Override
-    public void log() {
-        // TODO Auto-generated method stub
-
-    }
+    public void log() {}
 
 
     
