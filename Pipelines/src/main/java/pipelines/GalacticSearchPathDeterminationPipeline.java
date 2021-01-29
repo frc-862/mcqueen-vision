@@ -1,6 +1,7 @@
 package pipelines;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
@@ -79,8 +80,9 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
             try {
 
                 // get and scale image
-                Mat blob = Dnn.blobFromImage(img, 1.0/255.0, new Size(224, 224)); //, new Scalar(0), true, false, CV_32F);
+                // Mat blob = Dnn.blobFromImage(img, 1.0/255.0, new Size(224, 224)); //, new Scalar(0), true, false, CV_32F);
                 // TODO see about converting to RGB
+                Mat blob = Dnn.blobFromImage(img, 1.0/255.0, new Size(224, 224), new Scalar(0), true);
 
                 // set nnet input
                 network.setInput(blob);
