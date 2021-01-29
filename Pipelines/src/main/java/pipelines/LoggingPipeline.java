@@ -1,6 +1,5 @@
 package pipelines;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,19 +21,19 @@ public class LoggingPipeline implements LightningVisionPipeline {
 
     private int counter = 0;
     private long unixTime;
-    String pathName;
-    Path logFileDir;
+    private String pathName;
+    private Path logFileDir;
 
 
     public LoggingPipeline() {
         unixTime = System.currentTimeMillis() / 1000L;
-        pathName = "/home/pi/logs/log-" + unixTime + "/"; // "/mnt/log/img/log-" + unixTime + "/";
+        pathName = "/mnt/log/img/log-" + unixTime + "/"; // "/home/pi/logs/log-" + unixTime + "/"; 
         logFileDir = Paths.get(pathName);
         System.out.println("Path Name: " + pathName);
     }
 
     @Override
-    public void process(Mat arg0) {
+    public void process(Mat mat) {
         // Create if statement to check if path for image logging already exists. If not then create the proper path.
 
         try {
@@ -49,7 +48,7 @@ public class LoggingPipeline implements LightningVisionPipeline {
 
         String fileName = pathName + "raw-frame-" + counter + ".jpg";
 
-        Imgcodecs.imwrite(fileName, arg0);
+        Imgcodecs.imwrite(fileName, mat);
 
         counter++;
 
@@ -58,6 +57,4 @@ public class LoggingPipeline implements LightningVisionPipeline {
     @Override
     public void log() {}
 
-
-    
 }
