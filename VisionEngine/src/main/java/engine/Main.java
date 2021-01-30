@@ -40,6 +40,7 @@ public final class Main {
 		// start pipelines
 		for(String pipelineName : pipeNames) {
 			try {
+				System.out.println("Starting " + pipelineName);
 				Object pipelineInstance = Class.forName(pipelineName).getConstructor().newInstance();
 				final LightningVisionPipeline inst = (LightningVisionPipeline) pipelineInstance;
                 final VideoSource camera = CameraServerConfig.cameras.get(PipelineProcesser.getCamera(inst));
