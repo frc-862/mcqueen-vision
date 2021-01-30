@@ -9,9 +9,11 @@ import org.opencv.dnn.Net;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import util.LightningVisionPipeline;
+import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
 @Pipeline(camera=0) // TODO this should be camera 1 on comp bot
+@Disabled
 public class GalacticSearchPathDeterminationPipeline implements LightningVisionPipeline {
 
     public enum Paths {
@@ -108,7 +110,7 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
                                 for(Paths p : Paths.values()) {
                                     if(p.index() == i) {
                                         path = p;
-                                        break;
+                                        //break;
                                     }
                                 }
                             }
