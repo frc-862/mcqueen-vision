@@ -1,7 +1,4 @@
 #!/bin/sh
 echo "Waiting 5 seconds..."
 sleep 5
-echo "raspberry" | sudo -S mkdir /mnt/log/
-echo "raspberry" | sudo -S mount -t vfat /dev/sda1 /mnt/log/ -o rw,umask=0000
-echo "raspberry" | sudo -S chmod -R 755 /mnt/log/
 exec env LD_LIBRARY_PATH=/usr/local/frc/lib java -jar uploaded.jar
