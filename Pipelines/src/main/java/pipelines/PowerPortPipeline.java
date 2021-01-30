@@ -162,21 +162,21 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     }
 
-    double getInterpolatedDistanceFromTargetHeight(double f_targetHeight)
+    private double getInterpolatedDistanceFromTargetHeight(double f_targetHeight)
     {
         // distance = a(height^2) + b(height) + c
         // a, b, and c are constants derived from images at distances
         return ((TargetHeightAConstant * f_targetHeight * f_targetHeight) + (TargetHeightBConstant * f_targetHeight) + TargetHeightCConstant);
     }
 
-    double getInterpolatedDistanceFromTargetRow(double f_targetRow)
+    private double getInterpolatedDistanceFromTargetRow(double f_targetRow)
     {
         // distance = a(height^2) + b(height) + c
         // a, b, and c are constants derived from images at distances
         return ((TargetRowAConstant * f_targetRow * f_targetRow) + (TargetRowBConstant * f_targetRow) + TargetRowCConstant);
     }
 
-    double getAngleFromTarget(double targetCenterCol, double imageWidthCols)
+    private double getAngleFromTarget(double targetCenterCol, double imageWidthCols)
     {
         // Returns a number in degrees
         // Positive angle - right turn
@@ -184,13 +184,13 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         return (targetCenterCol - (imageWidthCols / 2)) * (FieldOfViewHoriz / imageWidthCols);
     }
 
-    boolean checkTargetProportion(int targetBoxHeight, int targetCenterRow)
+    private boolean checkTargetProportion(int targetBoxHeight, int targetCenterRow)
     {
         float ratio = (float)targetBoxHeight / (float)targetCenterRow;
         return ((Math.abs(ratio) - TargetHeightRatio) < TargetRatioThreshold);
     }
 
-    boolean distancesInBounds(double dist1, double dist2) {
+    private boolean distancesInBounds(double dist1, double dist2) {
         return true; // Disable to implement for testing
         // return (Math.abs(dist1 - dist2) < TargetDistanceThreshold);
     }
