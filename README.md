@@ -1,17 +1,21 @@
-# Lightning Vision
+# McQueen Vision
 
-![gradle build](https://github.com/edurso/lightning-vision/workflows/gradle%20build/badge.svg)
+![gradle build](https://github.com/frc-862/mcqueen-vision/workflows/gradle%20build/badge.svg)
 
-Program to be uploaded to rPi vision module with [this disk image](https://github.com/wpilibsuite/FRCVision-pi-gen/releases/latest).
+<img src="https://repository-images.githubusercontent.com/223694691/2a138780-0ed4-11ea-979c-27afe32caebe" height="300">
+
+Program to be uploaded to rPi vision module with [this disk image](https://github.com/wpilibsuite/WPILibPi/releases/latest).
 
 ## Program Set Up
 
-After setting up the pi with [the WPILibPi image](https://github.com/wpilibsuite/FRCVision-pi-gen/releases/latest), the configuration file at `/boot/frc.json` must be setup. It shoold look something like as follows. See [this](https://github.com/frc-862/mcqueen-vision/blob/master/VisionEngine/src/main/resources/json-format.txt) for more information.
+After setting up the pi with [the WPILibPi image](https://github.com/wpilibsuite/WPILibPi/releases/latest), the configuration file at `/boot/frc.json` must be setup. It shoold look something like as follows. See [this](https://github.com/frc-862/mcqueen-vision/blob/master/VisionEngine/src/main/resources/json-format.txt) for more information.
+
+If not specified, `ntmode` defaults to `client` but in order to use the pi independently of the robot, `ntmode` must be set to `server`.
 
 ```json
 {
     "team": 862,
-    "ntmode": <"client" or "server", "client" if unspecified>
+    "ntmode": "client",
     "cameras": [
         {
             "name": "rPi Camera 0",
