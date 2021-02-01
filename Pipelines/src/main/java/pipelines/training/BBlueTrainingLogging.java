@@ -5,7 +5,7 @@ import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
 @Pipeline(camera=0)
-// @Disabled
+@Disabled
 public class BBlueTrainingLogging extends LoggingPipeline {
     public BBlueTrainingLogging() {
         super("B-BLUE", "B-BLUE");

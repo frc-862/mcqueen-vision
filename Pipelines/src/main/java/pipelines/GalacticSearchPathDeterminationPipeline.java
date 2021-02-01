@@ -1,22 +1,18 @@
 package pipelines;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import util.LightningVisionPipeline;
-import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
 @Pipeline(camera=0) // TODO this should be camera 1 on comp bot
-@Disabled
 public class GalacticSearchPathDeterminationPipeline implements LightningVisionPipeline {
 
-    public enum Paths {
+    public enum RobotPaths {
 
         A_BLUE("A-BLUE", 0), 
         A_RED("A-RED", 1), 
@@ -28,7 +24,7 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
         private final int index;
 
-        private Paths(String str, int index) {
+        private RobotPaths(String str, int index) {
             this.str = str;
             this.index = index;
         }
@@ -47,9 +43,9 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
     public static final String POLL_RESULTS_ENTRY_NAME = "DeterminedPath";
 
-    public static final String MODEL_FILEPATH = "/home/pi/final-classifier.pb";
+    public static final String MODEL_FILEPATH = "/home/pi/path-classifier.pb";
 
-    private boolean shouldProcess = true; // false;
+    private boolean shouldProcess = false;
 
     NetworkTable ntab;
 
@@ -57,19 +53,24 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
     NetworkTableEntry pollRes;
 
-    Paths path = Paths.NONE;
+    RobotPaths path = RobotPaths.NONE;
 
     Net network;
 
     public GalacticSearchPathDeterminationPipeline() {
+
+        // Vision Network Table
         ntab = ntinst.getTable("Vision");
 
+        // Poll Request Entry
         pollReq = ntab.getEntry(POLL_REQUEST_ENTRY_NAME);
         pollReq.setBoolean(shouldProcess);
 
+        // Process Results Entry
         pollRes = ntab.getEntry(POLL_RESULTS_ENTRY_NAME);
         pollRes.setString(path.get());
 
+        // Get Model from File
         network = Dnn.readNetFromTensorflow(MODEL_FILEPATH);
         if(network.empty()) System.out.print("EMPTY ");
         System.out.print("Model Loaded\n");
@@ -77,65 +78,82 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
     }
 
     @Override
-    public void process(Mat img) {
+    public void process(Mat inputMat) {
+
+        // Only Run if Requested
         if (shouldProcess) {
             try {
 
-                // get and scale image
-                // Mat blob = Dnn.blobFromImage(img, 1.0/255.0, new Size(224, 224)); //, new Scalar(0), true, false, CV_32F);
-                // TODO see about converting to RGB
-                Mat blob = Dnn.blobFromImage(img, 1.0/255.0, new Size(224, 224), new Scalar(0), true);
+                // Get Image Blob
+                Mat blob = Dnn.blobFromImage(inputMat);
 
-                // set nnet input
-                network.setInput(blob);
+                // Print Matrix Dims, Usually NCHW
+                System.out.println(blob.size(0) + " | " + blob.size(1) + " | " + blob.size(2) + " | " + blob.size(3));
 
-                // run inference
-                Mat output = network.forward();
-
-                // print output object (should be 1x4)
-                // System.out.println("Output is: \n\n" + output + "\n\n");
-
-                // go over all 'pixels'
-                for (int row = 0 ; row < output.rows() ; ++row) {
-                    for (int col = 0 ; col < output.cols() ; ++col) {
-
-                        // get the image output
-                        double[] pix = output.get(row, col);
-                        // go over the one-hot encoded outputs
-                        for(int i = 0 ; i < pix.length ; ++i) {
-                            // they are doubles so make them longs 
-                            long curr = Math.round(pix[i]);
-                            // if the result is 1, then select the path at that index
-                            if(curr == 1) {
-                                for(Paths p : Paths.values()) {
-                                    if(p.index() == i) {
-                                        path = p;
-                                        //break;
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                // System.out.println("Determined Path: " + path.get());
+                // Determine Path by Running Inference
+                path = inference(blob);
 
             } catch (Exception e) {
+                System.out.println("DNN ERROR RUNNING INFERENCE:");
                 e.printStackTrace();
             }
+
+            // Only Run Once
             shouldProcess = false;
-            //pollReq.setBoolean(false);
-        } else {
-            path = Paths.NONE;
+            pollReq.setBoolean(false);
+
         }
     }
 
     @Override
     public void log() {
-        // Determine if robot has requested that a path be determined
+
+        // Get Process Request From Dash
         shouldProcess = pollReq.getBoolean(shouldProcess);
+
+        // Update Process Results
         pollRes.setString(path.get());
+
+    }
+
+    public RobotPaths inference(Mat blob) {
+
+        // Placeholder for Visible Path
+        RobotPaths res = RobotPaths.NONE;
+
+        // Set Network Input
+        network.setInput(blob);
+
+        // Forward Propagation
+        Mat out = network.forward();
+
+        // Get One-Hot Encoded Results
+        long[] arr = new long[4];
+        String outStr = "[";
+        for(int i = 0 ; i < 4 ; ++i) {
+            double[] pix = out.get(0, i);
+            double val = pix[0];
+            arr[i] = Math.round(val);
+        }
+        for(double p : arr) outStr += Math.round(p) + ", ";
+        outStr += "]";
+
+        // Display Encoded Inference Results
+        System.out.println("Values: " + outStr);
+
+        // Decode Resulting Values For Selected Path
+        for(int i = 0 ; i < arr.length ; ++i) 
+            if(arr[i] == 1) 
+                for(RobotPaths p : RobotPaths.values()) 
+                    if(p.index() == i) 
+                        res = p;
+
+        // Display Selected Path
+        System.out.println("Path: " + res.get());
+
+        // Return Selected Path
+        return res;
+
     }
 
 }

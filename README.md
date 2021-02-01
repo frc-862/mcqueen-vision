@@ -8,7 +8,7 @@ Program to be uploaded to rPi vision module with [this disk image](https://githu
 
 ## Program Set Up
 
-After setting up the pi with [the WPILibPi image](https://github.com/wpilibsuite/WPILibPi/releases/latest), the configuration file at `/boot/frc.json` must be setup. It shoold look something like as follows. See [this](https://github.com/frc-862/mcqueen-vision/blob/master/VisionEngine/src/main/resources/json-format.txt) for more information.
+After setting up the pi with [the WPILibPi image](https://github.com/wpilibsuite/WPILibPi/releases/latest), the configuration file at `/boot/frc.json` must be setup. It shoold look something like as follows. See [here](https://github.com/frc-862/mcqueen-vision/blob/master/VisionEngine/src/main/resources/json-format.txt) for more information.
 
 If not specified, `ntmode` defaults to `client` but in order to use the pi independently of the robot, `ntmode` must be set to `server`.
 
@@ -29,7 +29,11 @@ If not specified, `ntmode` defaults to `client` but in order to use the pi indep
 }
 ```
 
-## Program Modules
+After the pi is set up, this application can be added as a jar file. See the [deployment](#building) section below. If logging to a USB stick is needed, further setup is required. See [here](#logging-pipelines) for more details.
+
+## Program Overview
+
+For ease-of-use, the program is broken up into three individual components: `VisionEngine` which is the main backend for the program, `Processing` which contains the base functionality needed to process OpenCv pipelines, and `Pipelines` which contains OpenCv pipelines to be used on the robot. Most of the work needed will be in this directory.
 
 ### `VisionEngine`
 
@@ -41,7 +45,7 @@ This contains classes that are used to create and process pipelines defined in P
 
 ### `Pipelines`
 
-OpenCV vision pipelines are written here. These pipelines will typically implement the `LightningVisionPipeline` type which includes an interface to WPILib network tables.
+OpenCv vision pipelines are written here. These pipelines will typically implement the [`LightningVisionPipeline`](https://github.com/frc-862/mcqueen-vision/blob/master/Processing/src/main/java/util/LightningVisionPipeline.java) type which includes an interface to WPILib network tables.
 
 #### GRIP Generated Pipelines
 
@@ -72,7 +76,7 @@ public class GRIPPipelineWrapper implements LightningVisionPipeline {
 
 #### Logging Pipelines
 
-Logging pipelines write the camera's frames to a `.jpg` file on a USB key. Logging pipelines are implemented with the `LoggingPipeline` type as can be seen below.
+Logging pipelines write the camera's frames to a `.jpg` file on a USB key. Logging pipelines are implemented with the [`LoggingPipeline`](https://github.com/frc-862/mcqueen-vision/blob/master/Processing/src/main/java/util/LoggingPipeline.java) type as can be seen below.
 
 ```java
 @Pipeline(camera=0)
