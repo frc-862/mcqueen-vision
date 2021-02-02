@@ -129,13 +129,13 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
         // Get One-Hot Encoded Results
         long[] arr = new long[4];
-        String outStr = "[";
+        String outStr = "[ ";
         for(int i = 0 ; i < 4 ; ++i) {
             double[] pix = out.get(0, i);
             double val = pix[0];
             arr[i] = Math.round(val);
         }
-        for(double p : arr) outStr += Math.round(p) + ", ";
+        for(double p : arr) outStr += Math.round(p) + " ";
         outStr += "]";
 
         // Display Encoded Inference Results

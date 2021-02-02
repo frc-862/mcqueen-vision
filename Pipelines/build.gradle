@@ -2,16 +2,8 @@ plugins {
     id 'java'
 }
 
-repositories {
-    jcenter()
-    mavenCentral()
-}
-
 dependencies {
     implementation project(':Processing')
-    compile group: 'org.tensorflow', name: 'tensorflow-core-platform', version: '0.2.0'
-    compile group: 'org.tensorflow', name: 'tensorflow-framework', version: '0.2.0'
-    compile group: 'org.tensorflow', name: 'ndarray', version: '0.2.0'
 }
 
 apply from: '../build.common.gradle'
