@@ -10,7 +10,6 @@ import org.opencv.imgproc.Imgproc;
 import edu.wpi.first.networktables.NetworkTable;
 import grip.InfiniteRecharge;
 import util.LightningVisionPipeline;
-import util.annotation.Disabled;
 import util.annotation.Pipeline;
 import java.lang.Math;
 
@@ -19,6 +18,8 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private InfiniteRecharge inst;
     private NetworkTable ntab;
 
+    // Following variables will be used later to store target values
+
     private boolean TargetValid;
     private int TargetCenterX;
     private int TargetCenterY;
@@ -26,6 +27,9 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private double TargetWidth;
     private double TargetDistance;
     private double TargetAngle;
+    private double TargetDelay;
+
+    // Pipeline parameters - initial values to be moved to constants table
 
     private double FieldOfViewVert = 43.30;
     private double FieldOfViewHoriz = 70.42;
@@ -42,6 +46,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private int InputCameraImageRows = 0;
     private int InputCameraImageCols = 0;
 
+    // Initializes network table
     public PowerPortPipeline() {
         inst = new InfiniteRecharge();
         ntab = ntinst.getTable("Vision");
@@ -63,11 +68,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
             return; // If process hasn't defined image size there is nothing to do
         }
 
-        int x, y, height, count;
-        double elapsed;
-
-        int counter = 0;
-
+        // Posting current values to SmartDashboard
         ntab.getEntry("FieldOfViewVert").setDouble(FieldOfViewVert);
         ntab.getEntry("FieldOfViewHoriz").setDouble(FieldOfViewHoriz);
         ntab.getEntry("TargetHeightRatio").setDouble(TargetHeightRatio);
@@ -82,42 +83,38 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
         // do something with pipeline results
         ArrayList<MatOfPoint> contours = inst.findContoursOutput();
-        count = contours.size();
+        int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
         
         
-        findBestTarget(contours);
+        findBestTarget(contours); // Function will set number of classwide variables
 
+        // If no valid target is found, set default values. 
         if (!TargetValid) {
             
-            ntab.getEntry("VisionX").setNumber(0);
-            ntab.getEntry("VisionY").setNumber(0);
-            ntab.getEntry("VisionHeight").setDouble(0);
-            ntab.getEntry("VisionDistance").setDouble(0);
-            ntab.getEntry("VisionAngle").setDouble(0);
-            ntab.getEntry("VisionDelay").setDouble(0.1); // FIXTHIS - MAKE CORRECT PROCESSING DURATION
+            TargetCenterX = 0;
+            TargetCenterY = 0;
+            TargetHeight = 0;
+            TargetDistance = 0;
+            TargetAngle = 0;
+            TargetDelay = 0.1; // FIXTHIS at a later point for proper processing time
 
-        } else {
-            // const auto center = target.center;
-            // x = center.x - halfWidth;
-            // y = halfHeight - center.y;
-            // height = target.height;
-           
-
-            ntab.getEntry("VisionX").setNumber(TargetCenterX);
-            ntab.getEntry("VisionY").setNumber(TargetCenterY);
-            ntab.getEntry("VisionHeight").setNumber(TargetHeight);
-            ntab.getEntry("VisionDistance").setDouble(TargetDistance);
-            ntab.getEntry("VisionAngle").setDouble(TargetAngle);
-            ntab.getEntry("VisionDelay").setDouble(0.1); // FIXTHIS DELAY
         }
+            
+        ntab.getEntry("VisionX").setNumber(TargetCenterX);
+        ntab.getEntry("VisionY").setNumber(TargetCenterY);
+        ntab.getEntry("VisionHeight").setNumber(TargetHeight);
+        ntab.getEntry("VisionDistance").setDouble(TargetDistance);
+        ntab.getEntry("VisionAngle").setDouble(TargetAngle);
+        ntab.getEntry("VisionDelay").setDouble(TargetDelay);
     }
     
 
     public void findBestTarget (ArrayList<MatOfPoint> contours) {
 		// Look at target list and return most likely power port target entry
         TargetValid = false;
+
         // Reset active target info
         TargetDistance = 0;
         TargetHeight = 0;
@@ -131,25 +128,32 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
             // Iterates throught contour list
             for(int i=0; i< contours.size();i++) {
-                //contours.get(i)
                 
                 // Puts boundaries around current contour
                 Rect rect = Imgproc.boundingRect(contours.get(i));
 
                 // If new target area is bigger than current values then do next checks
 				if ((rect.area() > TargetWidth * TargetHeight)) {
-					double tempHeight = rect.height;
+
+                    // Finds the center of the current contour being processed on the x and y axes
                     int tempCenterX = (rect.x + (rect.width / 2));
                     int tempCenterY = (rect.y + (rect.height / 2));
-					if (checkTargetProportion(rect.height, tempCenterY)) {
+                    
+                    // If it passes checkTargetProportion <- FIXTHIS, explain in greater detail
+                    if (checkTargetProportion(rect.height, tempCenterY)) {
+                        // Checks distance of target based on both height and row to ensure proper distance
 						double tempDist = getInterpolatedDistanceFromTargetHeight(rect.height);
 						double tempDistTest = getInterpolatedDistanceFromTargetRow((rect.y + rect.height)); // Bottom Row of Target
-						if (distancesInBounds(tempDist, tempDistTest)) {
+                        
+                        // Ensures the difference in distances is within threshold
+                        if (distancesInBounds(tempDist, tempDistTest)) {
+                            // Set the current target variables equal to variables of the contour that has been computed and checked
 							TargetDistance = tempDist;
 							TargetHeight = rect.height;
 							TargetWidth = rect.width;
-							TargetCenterX = (rect.x + (rect.width / 2));
-							TargetCenterY = (rect.y + (rect.height / 2));
+							TargetCenterX = tempCenterX;
+                            TargetCenterY = tempCenterY;
+                            // Calculating how much our robot should turn in degrees to center the shooter on the target
                             TargetAngle = getAngleFromTarget(tempCenterX, InputCameraImageCols);
                             TargetValid = true;
 						}
@@ -162,36 +166,41 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     }
 
-    private double getInterpolatedDistanceFromTargetHeight(double f_targetHeight)
-    {
+    /* Given a collected image that provides target height in pixels, and a set of prior collected data (target height in pixels vs robot distance from target) 
+    This function estimates distance of target based on a second order polynomial fit to collected data
+    Requires that a, b, and c are computed offline ahead of time */
+    private double getInterpolatedDistanceFromTargetHeight(double f_targetHeight) {
         // distance = a(height^2) + b(height) + c
         // a, b, and c are constants derived from images at distances
         return ((TargetHeightAConstant * f_targetHeight * f_targetHeight) + (TargetHeightBConstant * f_targetHeight) + TargetHeightCConstant);
     }
 
-    private double getInterpolatedDistanceFromTargetRow(double f_targetRow)
-    {
+    /* Given a collected image that provides target rows in pixels, and a set of prior collected data (target rows in pixels vs robot distance from target) 
+    This function estimates distance of target based on a second order polynomial fit to collected data
+    Requires that a, b, and c are computed offline ahead of time */
+    private double getInterpolatedDistanceFromTargetRow(double f_targetRow) {
         // distance = a(height^2) + b(height) + c
         // a, b, and c are constants derived from images at distances
         return ((TargetRowAConstant * f_targetRow * f_targetRow) + (TargetRowBConstant * f_targetRow) + TargetRowCConstant);
     }
 
-    private double getAngleFromTarget(double targetCenterCol, double imageWidthCols)
-    {
+    private double getAngleFromTarget(double targetCenterCol, double imageWidthCols) {
         // Returns a number in degrees
         // Positive angle - right turn
         // Negative angle - left turn
+        // Use estimated center of target to estimate in degrees how much the robot needs to turn to be in line with the target
         return (targetCenterCol - (imageWidthCols / 2)) * (FieldOfViewHoriz / imageWidthCols);
     }
 
-    private boolean checkTargetProportion(int targetBoxHeight, int targetCenterRow)
-    {
+    // Investigate efficacy of this further
+    // Checks to ensure ratio of the current found target is similar to that of a model target
+    private boolean checkTargetProportion(int targetBoxHeight, int targetCenterRow) {
         float ratio = (float)targetBoxHeight / (float)targetCenterRow;
         return ((Math.abs(ratio) - TargetHeightRatio) < TargetRatioThreshold);
     }
 
     private boolean distancesInBounds(double dist1, double dist2) {
-        return true; // Disable to implement for testing
+        return true; // Disable to implement for testing <- FIXTHIS
         // return (Math.abs(dist1 - dist2) < TargetDistanceThreshold);
     }
 }
