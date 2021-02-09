@@ -9,7 +9,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
 
-@Pipeline(camera=0) // TODO this should be camera 1 on comp bot
+@Pipeline(camera=1)
 public class GalacticSearchPathDeterminationPipeline implements LightningVisionPipeline {
 
     public enum RobotPaths {
