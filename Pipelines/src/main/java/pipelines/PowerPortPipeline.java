@@ -193,7 +193,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     }
 
     // Investigate efficacy of this further
-    // Checks to ensure ratio of the current found target is similar to that of a model target
+    // Checks to ensure ratio of the current found target is similar to that of a model target <- FIXTHIS, don't really understand
     private boolean checkTargetProportion(int targetBoxHeight, int targetCenterRow) {
         float ratio = (float)targetBoxHeight / (float)targetCenterRow;
         return ((Math.abs(ratio) - TargetHeightRatio) < TargetRatioThreshold);
