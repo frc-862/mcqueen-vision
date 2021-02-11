@@ -21,7 +21,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     private boolean TargetValid;
     private int TargetCenterX;
-    private int TargetCenterY;
+    private int TargetCenterY; 
     private double TargetHeight;
     private double TargetWidth;
     private double TargetDistance;
@@ -63,10 +63,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
             return; // If process hasn't defined image size there is nothing to do
         }
 
-        int x, y, height, count;
-        double elapsed;
-
-        int counter = 0;
+        int count = 0;
 
         ntab.getEntry("FieldOfViewVert").setDouble(FieldOfViewVert);
         ntab.getEntry("FieldOfViewHoriz").setDouble(FieldOfViewHoriz);

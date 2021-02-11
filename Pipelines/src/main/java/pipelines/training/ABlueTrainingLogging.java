@@ -4,7 +4,7 @@ import util.LoggingPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
-@Pipeline(camera=0)
+@Pipeline(camera=1)
 @Disabled
 public class ABlueTrainingLogging extends LoggingPipeline {
     public ABlueTrainingLogging() {
