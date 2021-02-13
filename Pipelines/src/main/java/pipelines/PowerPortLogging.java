@@ -7,7 +7,7 @@ import util.annotation.Pipeline;
 public class PowerPortLogging extends LoggingPipeline {
 
     public PowerPortLogging() {
-        super("Shooter-Camera", "raw-image");
+        super("power-port", "raw-image");
     }
     
 }

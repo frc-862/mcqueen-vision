@@ -97,7 +97,7 @@ In order to log to a USB key, the following line must be added to the end of `/e
 
 - `/dev/sda1` is the default mounting point for the first USB inserted (sda is device name, 1 is the partition number on the USB key).
   - If a second UBS key is plugged in (or the same USB key is removed without being unmounted) the mounting point may change to `/dev/sdb1`.
-- `/mnt/log` is the location where the logging pipelines will write logged images.
+- `/mnt/log` is the location where the logging pipelines will write logged images. This may need to be created manually if it does not already exist. After shelling into the pi, `sudo mkdir /mnt/log` will do this from the working directory.
 - `vfat` is the file system driver for the USB device.
 - The rest of the parameters (generally speaking) allow the USB key to be written to by the pi.
 
