@@ -7,11 +7,9 @@ import org.opencv.dnn.Net;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import util.LightningVisionPipeline;
-import util.annotation.Disabled;
 import util.annotation.Pipeline;
 
 @Pipeline(camera=1)
-@Disabled
 public class GalacticSearchPathDeterminationPipeline implements LightningVisionPipeline {
 
     public enum RobotPaths {
