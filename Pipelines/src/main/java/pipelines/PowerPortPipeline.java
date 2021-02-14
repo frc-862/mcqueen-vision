@@ -18,10 +18,10 @@ import java.lang.Math;
 
 @Pipeline(camera=0)
 public class PowerPortPipeline implements LightningVisionPipeline {
+
     private InfiniteRecharge inst;
     private NetworkTable ntab;
     private NetworkTable griptab;
-    private ShuffleboardTab gripstab;
 
     // Following variables will be used later to store target values
 
@@ -55,11 +55,10 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     public PowerPortPipeline() {
         inst = new InfiniteRecharge();
         ntab = ntinst.getTable("Vision");
-        griptab = ntinst.getTable("PowerPortParams");
-        gripstab = Shuffleboard.getTab("PowerPortParams");
-        for(String name : inst.getParamNames()) {
-            griptab.getEntry(name).setNumber((double) inst.getParam(name));
-        }
+        // griptab = ntinst.getTable("PowerPortParams");
+        // for(String name : inst.getParamNames()) {
+        //     griptab.getEntry(name).setNumber((double) inst.getParam(name));
+        // }
     }
 
     @Override
@@ -77,16 +76,16 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     @Override
     public void log() {
-        for(String name : inst.getParamNames()) {
-            inst.initParam(name, griptab.getEntry(name).getValue().getDouble());
-        }
+        // for(String name : inst.getParamNames()) {
+        //     inst.initParam(name, griptab.getEntry(name).getValue().getDouble());
+        // }
         
         // TODO add process output as a video stream to dashboard
         //gripstab.add("Contour Output", () -> new Mat(inst.filterContoursOutput()));
 
         // Log to Network Table `ntab` here.
 
-        if ((InputCameraImageRows == 0)||(InputCameraImageCols == 0)) {
+        if ((InputCameraImageRows == 0) || (InputCameraImageCols == 0)) {
             return; // If process hasn't defined image size there is nothing to do
         }
 
@@ -104,7 +103,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
         // do something with pipeline results
-        ArrayList<MatOfPoint> contours = inst.findContoursOutput();
+        ArrayList<MatOfPoint> contours = inst.filterContoursOutput(); // inst.findContoursOutput(); // TODO filter contours output?
         int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
@@ -130,6 +129,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("VisionDistance").setDouble(TargetDistance);
         ntab.getEntry("VisionAngle").setDouble(TargetAngle);
         ntab.getEntry("VisionDelay").setDouble(TargetDelay);
+        
     }
     
 

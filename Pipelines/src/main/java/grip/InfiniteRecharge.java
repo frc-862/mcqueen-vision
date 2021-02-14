@@ -1,27 +1,22 @@
 package grip;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 
+import edu.wpi.first.wpilibj.vision.VisionPipeline;
+
 import org.opencv.core.*;
 import org.opencv.core.Core.*;
+import org.opencv.features2d.FeatureDetector;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.*;
 import org.opencv.objdetect.*;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 /**
 * InfiniteRecharge class.
@@ -30,160 +25,43 @@ import com.google.gson.JsonParser;
 *
 * @author GRIP
 */
-public class InfiniteRecharge {
-
-	//Pipeline values for cv methods
-	private HashMap<String, Object> params = new HashMap<>();
-
-	//Is pipeline mutable
-	private boolean isMutable = true;
-	
-	/**
-	 * Initilize pipeline value
-	 * @param name name of value
-	 * @param val 
-	 */
-	public void initParam(String name, Object val) {
-		params.put(name, val);
-	}
-
-	/**
-	 * Accessor for single parameter
-	 * @param name name of parameter
-	 * @return {@code Object} with parameter value
-	 */
-	public Object getParam(String name) {
-		if(isMutable) updateParams();
-		return params.get(name);
-	}
-
-	/**
-	 * Accessor for all parameter names
-	 * @return {@code Set<String>} of all parameter names
-	 */
-	public Set<String> getParamNames() {
-		return params.keySet();
-	}
+public class InfiniteRecharge implements VisionPipeline {
 
 	//Outputs
+	private Mat blurOutput = new Mat();
 	private Mat hsvThresholdOutput = new Mat();
 	private Mat cvDilateOutput = new Mat();
 	private Mat cvErodeOutput = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
 
-	
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-	}
-
-	//Pipeline JSON name
-	private static final String configFile = "InfiniteRechargeParams.json";
-	
-	//Pipeline JSON root directory
-	private static final String configDir = "/home/pi/pipeline-params/";
-	
-	//Full Pipeline JSON file path
-	private static final String configFPath = configDir + configFile;
-
-	/**
-	 * This is a method that will retrieve updated pipeline values from the pipeline's JSON file
-	 */
-	private void updateParams() {
-		Path fpath = Paths.get(configFPath);
-		JsonElement top;
-		try {
-			//Read JSON
-			top = new JsonParser().parse(Files.newBufferedReader(fpath));
-			if(!top.isJsonObject()) {
-				Files.deleteIfExists(fpath);
-				throw new IOException();
-			}
-			JsonObject obj = top.getAsJsonObject();
-			//Set Parameter Map To Values in JSON
-			this.params = new Gson().fromJson(obj, HashMap.class);
-		} catch(IOException ioe) {
-			System.out.println("Could not update pipeline parameters");
-			this.isMutable = false;
-		}
-	}
-
-	/**
-	 * Default constructor sets pipeline to mutable by default
-	 */
-	public InfiniteRecharge() { this(true); }
-
-	/**
-	 * Constructor 
-	 */
-	public InfiniteRecharge(boolean isMutable) {
-
-		//JSON path
-		Path fpath = Paths.get(configFPath);
-
-		//JSON dir
-        Path fdir = Paths.get(configDir);
-
-		//Is pipeline mutable
-		this.isMutable = isMutable;
-
-		//Read JSON
-		JsonElement top;
-		try {
-			top = new JsonParser().parse(Files.newBufferedReader(fpath));
-			if(!top.isJsonObject()) {
-				Files.deleteIfExists(fpath);
-				throw new IOException();
-			}
-			JsonObject obj = top.getAsJsonObject();
-			//Set Parameter Map To Values in JSON
-			this.params = new Gson().fromJson(obj, HashMap.class);
-		} catch(IOException ioe) {
-			//If JSON does not exist
-			try {
-				//Init default pipeline values
-				initParam("cvDilateIterations", 3.0);
-				initParam("cvErodeIterations", 1.0);
-				initParam("findContoursExternalOnly", false);
-				initParam("filterContoursMinArea", 300.0);
-				initParam("filterContoursMinPerimeter", 0.0);
-				initParam("filterContoursMinWidth", 0.0);
-				initParam("filterContoursMaxWidth", 1000.0);
-				initParam("filterContoursMinHeight", 20.0);
-				initParam("filterContoursMaxHeight", 1000.0);
-				initParam("filterContoursMaxVertices", 1000.0);
-				initParam("filterContoursMinVertices", 0.0);
-				initParam("filterContoursMinRatio", 0.0);
-				initParam("filterContoursMaxRatio", 1000.0);
-				//Create JSON dir/file
-				if(!Files.isDirectory(fdir)) Files.createDirectory(fdir);
-                if(!Files.exists(fpath)) Files.createFile(fpath);
-				//Write default values
-				Files.write(fpath, new Gson().toJson(this.params).getBytes(StandardCharsets.UTF_8));
-			} catch (Exception e) {
-				System.out.println("New File Could Not Be Created - Pipeline Will Continue Running");
-			}
-		}
-
 	}
 
 	/**
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
 	 */
-	public void process(Mat source0) {
+	@Override	public void process(Mat source0) {
+		// Step Blur0:
+		Mat blurInput = source0;
+		BlurType blurType = BlurType.get("Gaussian Blur");
+		double blurRadius = 2.7027027027027035;
+		blur(blurInput, blurType, blurRadius, blurOutput);
+
 		// Step HSV_Threshold0:
-		Mat hsvThresholdInput = source0;
-		double[] hsvThresholdHue = {53.33222038831282, 117.19838667161738};
-		double[] hsvThresholdSaturation = {107.89925852662877, 250.706766512382};
-		double[] hsvThresholdValue = {40.19264448336252, 255.0};
+		Mat hsvThresholdInput = blurOutput;
+		double[] hsvThresholdHue = {53.417266187050366, 112.76740237691003};
+		double[] hsvThresholdSaturation = {119.88309352517985, 255.0};
+		double[] hsvThresholdValue = {6.879756800994235, 134.16328821016236};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_dilate0:
 		Mat cvDilateSrc = hsvThresholdOutput;
 		Mat cvDilateKernel = new Mat();
 		Point cvDilateAnchor = new Point(-1, -1);
-		double cvDilateIterations = (double) getParam("cvDilateIterations");
-		int cvDilateBordertype = Core.BORDER_CONSTANT;
+		double cvDilateIterations = 2.0;
+		int cvDilateBordertype = Core.BORDER_REPLICATE;
 		Scalar cvDilateBordervalue = new Scalar(-1);
 		cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
 
@@ -191,31 +69,39 @@ public class InfiniteRecharge {
 		Mat cvErodeSrc = cvDilateOutput;
 		Mat cvErodeKernel = new Mat();
 		Point cvErodeAnchor = new Point(-1, -1);
-		double cvErodeIterations = (double) getParam("cvErodeIterations");
-		int cvErodeBordertype = Core.BORDER_CONSTANT;
+		double cvErodeIterations = 1.0;
+		int cvErodeBordertype = Core.BORDER_DEFAULT;
 		Scalar cvErodeBordervalue = new Scalar(-1);
 		cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, cvErodeOutput);
 
 		// Step Find_Contours0:
 		Mat findContoursInput = cvErodeOutput;
-		boolean findContoursExternalOnly = (boolean) getParam("findContoursExternalOnly");
+		boolean findContoursExternalOnly = true;
 		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
 
 		// Step Filter_Contours0:
 		ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
-		double filterContoursMinArea = (double) getParam("filterContoursMinArea");
-		double filterContoursMinPerimeter = (double) getParam("filterContoursMinPerimeter");
-		double filterContoursMinWidth = (double) getParam("filterContoursMinWidth");
-		double filterContoursMaxWidth = (double) getParam("filterContoursMaxWidth");
-		double filterContoursMinHeight = (double) getParam("filterContoursMinHeight");
-		double filterContoursMaxHeight = (double) getParam("filterContoursMaxHeight");
+		double filterContoursMinArea = 300.0;
+		double filterContoursMinPerimeter = 0.0;
+		double filterContoursMinWidth = 0.0;
+		double filterContoursMaxWidth = 1000.0;
+		double filterContoursMinHeight = 20.0;
+		double filterContoursMaxHeight = 1000.0;
 		double[] filterContoursSolidity = {0, 100};
-		double filterContoursMaxVertices = (double) getParam("filterContoursMaxVertices");
-		double filterContoursMinVertices = (double) getParam("filterContoursMinVertices");
-		double filterContoursMinRatio = (double) getParam("filterContoursMinRatio");
-		double filterContoursMaxRatio = (double) getParam("filterContoursMaxRatio");
+		double filterContoursMaxVertices = 1000.0;
+		double filterContoursMinVertices = 0.0;
+		double filterContoursMinRatio = 0.0;
+		double filterContoursMaxRatio = 1000.0;
 		filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
 
+	}
+
+	/**
+	 * This method is a generated getter for the output of a Blur.
+	 * @return Mat output from Blur.
+	 */
+	public Mat blurOutput() {
+		return blurOutput;
 	}
 
 	/**
@@ -258,6 +144,71 @@ public class InfiniteRecharge {
 		return filterContoursOutput;
 	}
 
+
+	/**
+	 * An indication of which type of filter to use for a blur.
+	 * Choices are BOX, GAUSSIAN, MEDIAN, and BILATERAL
+	 */
+	enum BlurType{
+		BOX("Box Blur"), GAUSSIAN("Gaussian Blur"), MEDIAN("Median Filter"),
+			BILATERAL("Bilateral Filter");
+
+		private final String label;
+
+		BlurType(String label) {
+			this.label = label;
+		}
+
+		public static BlurType get(String type) {
+			if (BILATERAL.label.equals(type)) {
+				return BILATERAL;
+			}
+			else if (GAUSSIAN.label.equals(type)) {
+			return GAUSSIAN;
+			}
+			else if (MEDIAN.label.equals(type)) {
+				return MEDIAN;
+			}
+			else {
+				return BOX;
+			}
+		}
+
+		@Override
+		public String toString() {
+			return this.label;
+		}
+	}
+
+	/**
+	 * Softens an image using one of several filters.
+	 * @param input The image on which to perform the blur.
+	 * @param type The blurType to perform.
+	 * @param doubleRadius The radius for the blur.
+	 * @param output The image in which to store the output.
+	 */
+	private void blur(Mat input, BlurType type, double doubleRadius,
+		Mat output) {
+		int radius = (int)(doubleRadius + 0.5);
+		int kernelSize;
+		switch(type){
+			case BOX:
+				kernelSize = 2 * radius + 1;
+				Imgproc.blur(input, output, new Size(kernelSize, kernelSize));
+				break;
+			case GAUSSIAN:
+				kernelSize = 6 * radius + 1;
+				Imgproc.GaussianBlur(input,output, new Size(kernelSize, kernelSize), radius);
+				break;
+			case MEDIAN:
+				kernelSize = 2 * radius + 1;
+				Imgproc.medianBlur(input, output, kernelSize);
+				break;
+			case BILATERAL:
+				Imgproc.bilateralFilter(input, output, -1, radius, radius);
+				break;
+		}
+	}
 
 	/**
 	 * Segment an image based on hue, saturation, and value ranges.
