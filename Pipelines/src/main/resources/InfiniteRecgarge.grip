@@ -1,0 +1,195 @@
+<grip:Pipeline>
+  <sources>
+    <grip:MultiImageFile>
+      <property name="path[0]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00407.jpg"/>
+      <property name="path[1]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00409.jpg"/>
+      <property name="path[2]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00411.jpg"/>
+      <property name="path[3]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00413.jpg"/>
+      <property name="numImages" value="7"/>
+      <property name="index" value="6"/>
+      <property name="path[4]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00415.jpg"/>
+      <property name="path[5]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00417.jpg"/>
+      <property name="path[6]" value="C:\Users\edurso\frc\image\distanceImages\02272020\10ft\src-00419.jpg"/>
+    </grip:MultiImageFile>
+    <grip:MultiImageFile>
+      <property name="path[0]" value="C:\Users\edurso\frc\image\distanceImages\02272020\18ft\src-00389.jpg"/>
+      <property name="path[1]" value="C:\Users\edurso\frc\image\distanceImages\02272020\18ft\src-00391.jpg"/>
+      <property name="path[2]" value="C:\Users\edurso\frc\image\distanceImages\02272020\18ft\src-00393.jpg"/>
+      <property name="path[3]" value="C:\Users\edurso\frc\image\distanceImages\02272020\18ft\src-00395.jpg"/>
+      <property name="numImages" value="6"/>
+      <property name="index" value="1"/>
+      <property name="path[4]" value="C:\Users\edurso\frc\image\distanceImages\02272020\18ft\src-00397.jpg"/>
+      <property name="path[5]" value="C:\Users\edurso\frc\image\distanceImages\02272020\18ft\src-00399.jpg"/>
+    </grip:MultiImageFile>
+    <grip:MultiImageFile>
+      <property name="path[0]" value="C:\Users\edurso\frc\image\distanceImages\02272020\5ft\src-00441.jpg"/>
+      <property name="path[1]" value="C:\Users\edurso\frc\image\distanceImages\02272020\5ft\src-00443.jpg"/>
+      <property name="path[2]" value="C:\Users\edurso\frc\image\distanceImages\02272020\5ft\src-00445.jpg"/>
+      <property name="numImages" value="3"/>
+      <property name="index" value="1"/>
+    </grip:MultiImageFile>
+    <grip:MultiImageFile>
+      <property name="path[0]" value="C:\Users\edurso\frc\image\distanceImages\02272020\25ft\src-00367.jpg"/>
+      <property name="path[1]" value="C:\Users\edurso\frc\image\distanceImages\02272020\25ft\src-00369.jpg"/>
+      <property name="path[2]" value="C:\Users\edurso\frc\image\distanceImages\02272020\25ft\src-00371.jpg"/>
+      <property name="path[3]" value="C:\Users\edurso\frc\image\distanceImages\02272020\25ft\src-00373.jpg"/>
+      <property name="numImages" value="4"/>
+      <property name="index" value="0"/>
+    </grip:MultiImageFile>
+    <grip:MultiImageFile>
+      <property name="path[8]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00315.jpg"/>
+      <property name="numImages" value="15"/>
+      <property name="index" value="14"/>
+      <property name="path[9]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00317.jpg"/>
+      <property name="path[4]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00307.jpg"/>
+      <property name="path[5]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00309.jpg"/>
+      <property name="path[6]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00311.jpg"/>
+      <property name="path[7]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00313.jpg"/>
+      <property name="path[0]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00299.jpg"/>
+      <property name="path[13]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00325.jpg"/>
+      <property name="path[1]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00301.jpg"/>
+      <property name="path[14]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00327.jpg"/>
+      <property name="path[2]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00303.jpg"/>
+      <property name="path[11]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00321.jpg"/>
+      <property name="path[3]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00305.jpg"/>
+      <property name="path[12]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00323.jpg"/>
+      <property name="path[10]" value="C:\Users\edurso\frc\image\distanceImages\02272020\33.8ft\src-00319.jpg"/>
+    </grip:MultiImageFile>
+  </sources>
+  <steps>
+    <grip:Step name="HSV Threshold">
+      <grip:Input step="0" socket="0"/>
+      <grip:Input step="0" socket="1">
+        <value>
+          <double>53.33222038831282</double>
+          <double>117.19838667161738</double>
+        </value>
+      </grip:Input>
+      <grip:Input step="0" socket="2">
+        <value>
+          <double>107.89925852662877</double>
+          <double>250.706766512382</double>
+        </value>
+      </grip:Input>
+      <grip:Input step="0" socket="3">
+        <value>
+          <double>40.19264448336252</double>
+          <double>255.0</double>
+        </value>
+      </grip:Input>
+      <grip:Output step="0" socket="0" previewed="false"/>
+    </grip:Step>
+    <grip:Step name="CV dilate">
+      <grip:Input step="1" socket="0"/>
+      <grip:Input step="1" socket="1"/>
+      <grip:Input step="1" socket="2"/>
+      <grip:Input step="1" socket="3">
+        <value>3.0</value>
+      </grip:Input>
+      <grip:Input step="1" socket="4">
+        <value>BORDER_CONSTANT</value>
+      </grip:Input>
+      <grip:Input step="1" socket="5"/>
+      <grip:Output step="1" socket="0" previewed="false"/>
+    </grip:Step>
+    <grip:Step name="CV erode">
+      <grip:Input step="2" socket="0"/>
+      <grip:Input step="2" socket="1"/>
+      <grip:Input step="2" socket="2"/>
+      <grip:Input step="2" socket="3">
+        <value>1.0</value>
+      </grip:Input>
+      <grip:Input step="2" socket="4">
+        <value>BORDER_CONSTANT</value>
+      </grip:Input>
+      <grip:Input step="2" socket="5"/>
+      <grip:Output step="2" socket="0" previewed="false"/>
+    </grip:Step>
+    <grip:Step name="Find Contours">
+      <grip:Input step="3" socket="0"/>
+      <grip:Input step="3" socket="1">
+        <value>false</value>
+      </grip:Input>
+      <grip:Output step="3" socket="0" previewed="false"/>
+    </grip:Step>
+    <grip:Step name="Filter Contours">
+      <grip:Input step="4" socket="0"/>
+      <grip:Input step="4" socket="1">
+        <value>300.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="2">
+        <value>0.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="3">
+        <value>0.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="4">
+        <value>1000.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="5">
+        <value>20.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="6">
+        <value>1000.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="7">
+        <value>
+          <int>0</int>
+          <int>100</int>
+        </value>
+      </grip:Input>
+      <grip:Input step="4" socket="8">
+        <value>1000.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="9">
+        <value>0.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="10">
+        <value>0.0</value>
+      </grip:Input>
+      <grip:Input step="4" socket="11">
+        <value>1000.0</value>
+      </grip:Input>
+      <grip:Output step="4" socket="0" previewed="true"/>
+    </grip:Step>
+  </steps>
+  <connections>
+    <grip:Connection>
+      <grip:Output step="1" socket="0" previewed="false"/>
+      <grip:Input step="2" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="2" socket="0" previewed="false"/>
+      <grip:Input step="3" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="0" socket="0" previewed="false"/>
+      <grip:Input step="1" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output source="4" socket="0" previewed="false"/>
+      <grip:Input step="0" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="3" socket="0" previewed="false"/>
+      <grip:Input step="4" socket="0"/>
+    </grip:Connection>
+  </connections>
+  <settings>
+    <teamNumber>862</teamNumber>
+    <publishAddress>roboRIO-862-FRC.local</publishAddress>
+    <deployAddress>roboRIO-862-FRC.local</deployAddress>
+    <deployDir>/home/lvuser</deployDir>
+    <deployUser>lvuser</deployUser>
+    <deployJavaHome>/usr/local/frc/JRE/</deployJavaHome>
+    <deployJvmOptions>-Xmx50m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:MaxNewSize=16m</deployJvmOptions>
+  </settings>
+  <codeGenerationSettings>
+    <language>Java</language>
+    <className>InfiniteRecharge</className>
+    <implementWpilibPipeline>false</implementWpilibPipeline>
+    <saveDir>\\wsl$\Ubuntu\home\edurso\frc\mcqueen-vision\Pipelines\src\main\java\grip</saveDir>
+    <packageName>grip</packageName>
+    <moduleName>gtestpy</moduleName>
+  </codeGenerationSettings>
+</grip:Pipeline>

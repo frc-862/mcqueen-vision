@@ -7,7 +7,10 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
+import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import grip.InfiniteRecharge;
 import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
@@ -15,8 +18,10 @@ import java.lang.Math;
 
 @Pipeline(camera=0)
 public class PowerPortPipeline implements LightningVisionPipeline {
+
     private InfiniteRecharge inst;
     private NetworkTable ntab;
+    private NetworkTable griptab;
 
     // Following variables will be used later to store target values
 
@@ -50,21 +55,37 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     public PowerPortPipeline() {
         inst = new InfiniteRecharge();
         ntab = ntinst.getTable("Vision");
+        // griptab = ntinst.getTable("PowerPortParams");
+        // for(String name : inst.getParamNames()) {
+        //     griptab.getEntry(name).setNumber((double) inst.getParam(name));
+        // }
     }
 
     @Override
     public void process(Mat mat) {
         // Pulling out image size to use later
+        long enter = System.nanoTime();
         InputCameraImageRows = mat.rows();
         InputCameraImageCols = mat.cols();
         inst.process(mat);
+        long elapsed = System.nanoTime() - enter;
+        ntab.getEntry("NanoSecsPerProcess_Tune").setNumber(elapsed);
+        ntab.getEntry("SecsPerProcess_Tune").setNumber(elapsed*1e-09);
+        ntab.getEntry("FramesProcessedPerSec_Tune").setNumber(1/(elapsed*1e-09));
     }
 
     @Override
     public void log() {
+        // for(String name : inst.getParamNames()) {
+        //     inst.initParam(name, griptab.getEntry(name).getValue().getDouble());
+        // }
+        
+        // TODO add process output as a video stream to dashboard
+        //gripstab.add("Contour Output", () -> new Mat(inst.filterContoursOutput()));
+
         // Log to Network Table `ntab` here.
 
-        if ((InputCameraImageRows == 0)||(InputCameraImageCols == 0)) {
+        if ((InputCameraImageRows == 0) || (InputCameraImageCols == 0)) {
             return; // If process hasn't defined image size there is nothing to do
         }
 
@@ -82,7 +103,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
         // do something with pipeline results
-        ArrayList<MatOfPoint> contours = inst.findContoursOutput();
+        ArrayList<MatOfPoint> contours = inst.filterContoursOutput(); // inst.findContoursOutput(); // TODO filter contours output?
         int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
@@ -108,6 +129,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("VisionDistance").setDouble(TargetDistance);
         ntab.getEntry("VisionAngle").setDouble(TargetAngle);
         ntab.getEntry("VisionDelay").setDouble(TargetDelay);
+        
     }
     
 
