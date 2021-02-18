@@ -1,5 +1,6 @@
 package engine;
 
+import util.CameraServerConfig;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionThread;

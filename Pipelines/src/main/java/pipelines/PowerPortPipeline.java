@@ -7,11 +7,17 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import grip.InfiniteRecharge;
+import util.CameraServerConfig;
 import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
 import java.lang.Math;
@@ -76,13 +82,10 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     @Override
     public void log() {
-        // for(String name : inst.getParamNames()) {
-        //     inst.initParam(name, griptab.getEntry(name).getValue().getDouble());
-        // }
-        
+       
         // TODO add process output as a video stream to dashboard
         //gripstab.add("Contour Output", () -> new Mat(inst.filterContoursOutput()));
-
+        
         // Log to Network Table `ntab` here.
 
         if ((InputCameraImageRows == 0) || (InputCameraImageCols == 0)) {
@@ -102,8 +105,29 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("TargetRowBConstant").setDouble(TargetRowBConstant);
         ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
+		int frames_per_sec = 15;
+        VideoSource camera = CameraServerConfig.cameras.get(0);
+		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
+		
+		// Start raw Video Streaming Server
+        /*
+		MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
+		rawVideoServer.setSource(camera);
+		CvSink cvsink = new CvSink("cvsink");
+		cvsink.setSource(camera); 
+        */
+
+		// Start processed Video server 
+		CvSource cvsource = new CvSource("cvsource", VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
+		MjpegServer processedVideoServer = new MjpegServer("processed_video_server", 8082);
+		processedVideoServer.setSource(cvsource);
+
+        // if this doesn't work try and explicitly sending to network table - ntab.getEntry("ProcessedCameraOut").set
+
+        
+
         // do something with pipeline results
-        ArrayList<MatOfPoint> contours = inst.filterContoursOutput(); // inst.findContoursOutput(); // TODO filter contours output?
+        ArrayList<MatOfPoint> contours = inst.filterContoursOutput(); // inst.findContoursOutput();
         int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
