@@ -119,7 +119,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
 		// Start processed Video server 
 		CvSource cvsource = new CvSource("cvsource", VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
-		MjpegServer processedVideoServer = new MjpegServer("processed_video_server", 8082);
+		MjpegServer processedVideoServer = new MjpegServer("processed_video_server", 1183);
 		processedVideoServer.setSource(cvsource);
 
         // if this doesn't work try and explicitly sending to network table - ntab.getEntry("ProcessedCameraOut").set
