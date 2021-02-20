@@ -20,7 +20,7 @@ If not specified, `ntmode` defaults to `client` but in order to use the pi indep
         {
             "name": "rPi Camera 0",
             "path": "/dev/video0",
-            "pixel format": "mjpg",
+            "pixel format": "mjpeg",
             "width": 160,
             "height": 120,
             "fps": 30

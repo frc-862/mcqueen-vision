@@ -1,6 +1,6 @@
 {
     "team": 862,
-    "ntmode": "server",
+    "ntmode": "client",
     "debug": false,   
     "cameras": [
         {
@@ -161,23 +161,23 @@
 	{
 	    "name": "front-cam",
 	    "path": "/dev/video1",
-	    "width": 320,
-	    "height": 240,
+	    "width": 640,
+	    "height": 360,
 	    "pixel format": "yuyv",
-	    "fps": 10,
+	    "fps": 15,
 	    "stream": {
 		"properties": [
 		    {
 			"name": "width",
-			"value": 320
+			"value": 640
 		    },
 		    {
 			"name": "height",
-			"value": 240
+			"value": 360
 		    },
 		    {
 			"name": "fps",
-			"value": 10
+			"value": 15
 		    }
 		]
 	    }

@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 
-import edu.wpi.first.wpilibj.vision.VisionPipeline;
-
 import org.opencv.core.*;
 import org.opencv.core.Core.*;
 import org.opencv.features2d.FeatureDetector;
@@ -25,10 +23,9 @@ import org.opencv.objdetect.*;
 *
 * @author GRIP
 */
-public class InfiniteRecharge implements VisionPipeline {
+public class InfiniteRecharge {
 
 	//Outputs
-	private Mat blurOutput = new Mat();
 	private Mat hsvThresholdOutput = new Mat();
 	private Mat cvDilateOutput = new Mat();
 	private Mat cvErodeOutput = new Mat();
@@ -42,26 +39,20 @@ public class InfiniteRecharge implements VisionPipeline {
 	/**
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
 	 */
-	@Override	public void process(Mat source0) {
-		// Step Blur0:
-		Mat blurInput = source0;
-		BlurType blurType = BlurType.get("Gaussian Blur");
-		double blurRadius = 2.7027027027027035;
-		blur(blurInput, blurType, blurRadius, blurOutput);
-
+	public void process(Mat source0) {
 		// Step HSV_Threshold0:
-		Mat hsvThresholdInput = blurOutput;
-		double[] hsvThresholdHue = {53.417266187050366, 112.76740237691003};
-		double[] hsvThresholdSaturation = {119.88309352517985, 255.0};
-		double[] hsvThresholdValue = {6.879756800994235, 134.16328821016236};
+		Mat hsvThresholdInput = source0;
+		double[] hsvThresholdHue = {46.94244604316547, 74.02730375426621};
+		double[] hsvThresholdSaturation = {149.05575539568346, 255.0};
+		double[] hsvThresholdValue = {4.586330935251798, 46.12627986348124};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_dilate0:
 		Mat cvDilateSrc = hsvThresholdOutput;
 		Mat cvDilateKernel = new Mat();
 		Point cvDilateAnchor = new Point(-1, -1);
-		double cvDilateIterations = 2.0;
-		int cvDilateBordertype = Core.BORDER_REPLICATE;
+		double cvDilateIterations = 3.0;
+		int cvDilateBordertype = Core.BORDER_CONSTANT;
 		Scalar cvDilateBordervalue = new Scalar(-1);
 		cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
 
@@ -70,13 +61,13 @@ public class InfiniteRecharge implements VisionPipeline {
 		Mat cvErodeKernel = new Mat();
 		Point cvErodeAnchor = new Point(-1, -1);
 		double cvErodeIterations = 1.0;
-		int cvErodeBordertype = Core.BORDER_DEFAULT;
+		int cvErodeBordertype = Core.BORDER_CONSTANT;
 		Scalar cvErodeBordervalue = new Scalar(-1);
 		cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, cvErodeOutput);
 
 		// Step Find_Contours0:
 		Mat findContoursInput = cvErodeOutput;
-		boolean findContoursExternalOnly = true;
+		boolean findContoursExternalOnly = false;
 		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
 
 		// Step Filter_Contours0:
@@ -94,14 +85,6 @@ public class InfiniteRecharge implements VisionPipeline {
 		double filterContoursMaxRatio = 1000.0;
 		filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
 
-	}
-
-	/**
-	 * This method is a generated getter for the output of a Blur.
-	 * @return Mat output from Blur.
-	 */
-	public Mat blurOutput() {
-		return blurOutput;
 	}
 
 	/**
@@ -144,71 +127,6 @@ public class InfiniteRecharge implements VisionPipeline {
 		return filterContoursOutput;
 	}
 
-
-	/**
-	 * An indication of which type of filter to use for a blur.
-	 * Choices are BOX, GAUSSIAN, MEDIAN, and BILATERAL
-	 */
-	enum BlurType{
-		BOX("Box Blur"), GAUSSIAN("Gaussian Blur"), MEDIAN("Median Filter"),
-			BILATERAL("Bilateral Filter");
-
-		private final String label;
-
-		BlurType(String label) {
-			this.label = label;
-		}
-
-		public static BlurType get(String type) {
-			if (BILATERAL.label.equals(type)) {
-				return BILATERAL;
-			}
-			else if (GAUSSIAN.label.equals(type)) {
-			return GAUSSIAN;
-			}
-			else if (MEDIAN.label.equals(type)) {
-				return MEDIAN;
-			}
-			else {
-				return BOX;
-			}
-		}
-
-		@Override
-		public String toString() {
-			return this.label;
-		}
-	}
-
-	/**
-	 * Softens an image using one of several filters.
-	 * @param input The image on which to perform the blur.
-	 * @param type The blurType to perform.
-	 * @param doubleRadius The radius for the blur.
-	 * @param output The image in which to store the output.
-	 */
-	private void blur(Mat input, BlurType type, double doubleRadius,
-		Mat output) {
-		int radius = (int)(doubleRadius + 0.5);
-		int kernelSize;
-		switch(type){
-			case BOX:
-				kernelSize = 2 * radius + 1;
-				Imgproc.blur(input, output, new Size(kernelSize, kernelSize));
-				break;
-			case GAUSSIAN:
-				kernelSize = 6 * radius + 1;
-				Imgproc.GaussianBlur(input,output, new Size(kernelSize, kernelSize), radius);
-				break;
-			case MEDIAN:
-				kernelSize = 2 * radius + 1;
-				Imgproc.medianBlur(input, output, kernelSize);
-				break;
-			case BILATERAL:
-				Imgproc.bilateralFilter(input, output, -1, radius, radius);
-				break;
-		}
-	}
 
 	/**
 	 * Segment an image based on hue, saturation, and value ranges.
