@@ -46,7 +46,7 @@ public final class Main {
                 final VideoSource camera = CameraServerConfig.cameras.get(PipelineProcesser.getCamera(inst));
                 VisionThread pipelineThread = new VisionThread(camera, inst, pipeline -> pipeline.log());
                 pipelineThread.start();
-			} catch(ArrayIndexOutOfBoundsException aioobe) {
+			} catch(IndexOutOfBoundsException aioobe) {
 				printFailure("The Selected Camera Cannot Be Found", pipelineName);
 			} catch (ClassNotFoundException cnfe) {
 				printFailure("The Pipeline Was Not Found", pipelineName);
