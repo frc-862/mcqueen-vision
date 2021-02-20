@@ -64,7 +64,21 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         // griptab = ntinst.getTable("PowerPortParams");
         // for(String name : inst.getParamNames()) {
         //     griptab.getEntry(name).setNumber((double) inst.getParam(name));
-        // }
+        // }            
+        VideoSource camera = CameraServerConfig.cameras.get(0);
+        int frames_per_sec = 15;
+		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
+		
+		/* Start raw Video Streaming Server */
+		MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
+		rawVideoServer.setSource(camera);
+		CvSink cvsink = new CvSink("cvsink");
+		cvsink.setSource(camera);
+
+		/* Start processed Video server */
+		CvSource cvsource = new CvSource("cvsource", VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
+		MjpegServer processedVideoServer = new MjpegServer("processed_video_server", 8082);
+		processedVideoServer.setSource(cvsource);
     }
 
     @Override
@@ -105,9 +119,10 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("TargetRowBConstant").setDouble(TargetRowBConstant);
         ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
-		int frames_per_sec = 15;
-        VideoSource camera = CameraServerConfig.cameras.get(0);
-		camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
+            
+        // int frames_per_sec = 15;
+        // VideoSource camera = CameraServerConfig.cameras.get(0);
+        // camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
 		
 		// Start raw Video Streaming Server
         /*
@@ -118,9 +133,11 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         */
 
 		// Start processed Video server 
-		CvSource cvsource = new CvSource("cvsource", VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
-		MjpegServer processedVideoServer = new MjpegServer("processed_video_server", 1183);
-		processedVideoServer.setSource(cvsource);
+        // CvSink imageSink = new CvSink("CV Image Grabber");
+        // imageSink.setSource(camera);
+        // CvSource cvsource = new CvSource("cvsource", VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, frames_per_sec);
+        // MjpegServer processedVideoServer = new MjpegServer("processed_video_server", 4000); // Fails to bind to port??
+        // processedVideoServer.setSource(cvsource);
 
         // if this doesn't work try and explicitly sending to network table - ntab.getEntry("ProcessedCameraOut").set
 
