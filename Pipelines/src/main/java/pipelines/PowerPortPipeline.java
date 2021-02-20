@@ -21,10 +21,8 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     private InfiniteRecharge inst;
     private NetworkTable ntab;
-    private NetworkTable griptab;
 
     // Following variables will be used later to store target values
-
     private boolean TargetValid;
     private int TargetCenterX;
     private int TargetCenterY; 
@@ -35,7 +33,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private double TargetDelay;
 
     // Pipeline parameters - initial values to be moved to constants table
-
     private double FieldOfViewVert = 43.30;
     private double FieldOfViewHoriz = 70.42;
     private double TargetHeightRatio = 1.0;
@@ -55,10 +52,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     public PowerPortPipeline() {
         inst = new InfiniteRecharge();
         ntab = ntinst.getTable("Vision");
-        // griptab = ntinst.getTable("PowerPortParams");
-        // for(String name : inst.getParamNames()) {
-        //     griptab.getEntry(name).setNumber((double) inst.getParam(name));
-        // }
     }
 
     @Override
@@ -76,15 +69,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     @Override
     public void log() {
-        // for(String name : inst.getParamNames()) {
-        //     inst.initParam(name, griptab.getEntry(name).getValue().getDouble());
-        // }
-        
-        // TODO add process output as a video stream to dashboard
-        //gripstab.add("Contour Output", () -> new Mat(inst.filterContoursOutput()));
-
         // Log to Network Table `ntab` here.
-
         if ((InputCameraImageRows == 0) || (InputCameraImageCols == 0)) {
             return; // If process hasn't defined image size there is nothing to do
         }
@@ -107,7 +92,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
-        
         
         findBestTarget(contours); // Function will set number of classwide variables
 
