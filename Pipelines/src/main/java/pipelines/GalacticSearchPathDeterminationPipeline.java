@@ -39,36 +39,36 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
     }
 
-    public static final String POLL_REQUEST_ENTRY_NAME = "DeterminePath";
+    public static final String PROCESS_REQUEST_ENTRY_NAME = "DeterminePath";
 
-    public static final String POLL_RESULTS_ENTRY_NAME = "DeterminedPath";
+    public static final String INFERENCE_RESULT_ENTRY_NAME = "DeterminedPath";
 
     public static final String MODEL_FILEPATH = "/home/pi/path-classifier.pb";
 
     private boolean shouldProcess = false;
 
-    NetworkTable ntab;
+    private NetworkTable ntab;
 
-    NetworkTableEntry pollReq;
+    private NetworkTableEntry processReq;
 
-    NetworkTableEntry pollRes;
+    private NetworkTableEntry processRes;
 
-    RobotPaths path = RobotPaths.NONE;
+    private RobotPaths path = RobotPaths.NONE;
 
-    Net network;
+    private Net network;
 
     public GalacticSearchPathDeterminationPipeline() {
 
         // Vision Network Table
         ntab = ntinst.getTable("Vision");
 
-        // Poll Request Entry
-        pollReq = ntab.getEntry(POLL_REQUEST_ENTRY_NAME);
-        pollReq.setBoolean(shouldProcess);
+        // Process Request Entry
+        processReq = ntab.getEntry(PROCESS_REQUEST_ENTRY_NAME);
+        processReq.setBoolean(shouldProcess);
 
         // Process Results Entry
-        pollRes = ntab.getEntry(POLL_RESULTS_ENTRY_NAME);
-        pollRes.setString(path.get());
+        processRes = ntab.getEntry(INFERENCE_RESULT_ENTRY_NAME);
+        processRes.setString(path.get());
 
         // Get Model from File
         network = Dnn.readNetFromTensorflow(MODEL_FILEPATH);
@@ -100,19 +100,20 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
             // Only Run Once
             shouldProcess = false;
-            pollReq.setBoolean(false);
+            processReq.setBoolean(false);
 
         }
+
     }
 
     @Override
     public void log() {
 
         // Get Process Request From Dash
-        shouldProcess = pollReq.getBoolean(shouldProcess);
+        shouldProcess = processReq.getBoolean(shouldProcess);
 
         // Update Process Results
-        pollRes.setString(path.get());
+        processRes.setString(path.get());
 
     }
 

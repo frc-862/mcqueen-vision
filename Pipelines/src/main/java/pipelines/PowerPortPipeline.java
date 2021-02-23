@@ -7,7 +7,10 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
+import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import grip.InfiniteRecharge;
 import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
@@ -15,11 +18,11 @@ import java.lang.Math;
 
 @Pipeline(camera=0)
 public class PowerPortPipeline implements LightningVisionPipeline {
+
     private InfiniteRecharge inst;
     private NetworkTable ntab;
 
     // Following variables will be used later to store target values
-
     private boolean TargetValid;
     private int TargetCenterX;
     private int TargetCenterY; 
@@ -30,7 +33,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private double TargetDelay;
 
     // Pipeline parameters - initial values to be moved to constants table
-
     private double FieldOfViewVert = 43.30;
     private double FieldOfViewHoriz = 70.42;
     private double TargetHeightRatio = 1.0;
@@ -55,16 +57,20 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     @Override
     public void process(Mat mat) {
         // Pulling out image size to use later
+        long enter = System.nanoTime();
         InputCameraImageRows = mat.rows();
         InputCameraImageCols = mat.cols();
         inst.process(mat);
+        long elapsed = System.nanoTime() - enter;
+        ntab.getEntry("NanoSecsPerProcess_Tune").setNumber(elapsed);
+        ntab.getEntry("SecsPerProcess_Tune").setNumber(elapsed*1e-09);
+        ntab.getEntry("FramesProcessedPerSec_Tune").setNumber(1/(elapsed*1e-09));
     }
 
     @Override
     public void log() {
         // Log to Network Table `ntab` here.
-
-        if ((InputCameraImageRows == 0)||(InputCameraImageCols == 0)) {
+        if ((InputCameraImageRows == 0) || (InputCameraImageCols == 0)) {
             return; // If process hasn't defined image size there is nothing to do
         }
 
@@ -82,11 +88,10 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("TargetRowCConstant").setDouble(TargetRowCConstant);
 
         // do something with pipeline results
-        ArrayList<MatOfPoint> contours = inst.findContoursOutput();
+        ArrayList<MatOfPoint> contours = inst.filterContoursOutput(); // inst.findContoursOutput(); // TODO filter contours output?
         int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
-        
         
         findBestTarget(contours); // Function will set number of classwide variables
 
@@ -108,6 +113,7 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         ntab.getEntry("VisionDistance").setDouble(TargetDistance);
         ntab.getEntry("VisionAngle").setDouble(TargetAngle);
         ntab.getEntry("VisionDelay").setDouble(TargetDelay);
+        
     }
     
 
