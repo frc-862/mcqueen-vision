@@ -9,16 +9,11 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import grip.InfiniteRecharge;
 import util.CameraServerConfig;
 import util.LightningVisionPipeline;
@@ -30,14 +25,12 @@ public class PowerPortPipeline implements LightningVisionPipeline {
 
     private InfiniteRecharge inst;
     private NetworkTable ntab;
-    private NetworkTable griptab;
     private CvSource output;
     private CvSource output2;
     private MjpegServer processedVideoServer;
     private MjpegServer processedVideoServer2;
 
     // Following variables will be used later to store target values
-
     private boolean TargetValid;
     private int TargetCenterX;
     private int TargetCenterY; 
@@ -48,7 +41,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     private double TargetDelay;
 
     // Pipeline parameters - initial values to be moved to constants table
-
     private double FieldOfViewVert = 43.30;
     private double FieldOfViewHoriz = 70.42;
     private double TargetHeightRatio = 1.0;
@@ -68,13 +60,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
     public PowerPortPipeline() {
         inst = new InfiniteRecharge();
         ntab = ntinst.getTable("Vision");
-        // griptab = ntinst.getTable("PowerPortParams");
-        // for(String name : inst.getParamNames()) {
-        //     griptab.getEntry(name).setNumber((double) inst.getParam(name));
-        // }            
-        VideoSource camera = CameraServerConfig.cameras.get(0);
-        int framesPerSec = 90;
-		// camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, InputCameraImageCols, InputCameraImageRows, framesPerSec);
 
 		// Processed video server for HSV image
         output = CameraServer.getInstance().putVideo("Threshold", InputCameraImageCols, InputCameraImageRows);
@@ -105,21 +90,13 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         var contours = inst.filterContoursOutput();
         Imgproc.drawContours(contourImg, contours, -1, new Scalar(255, 255, 255), 3);
 
-
         output2.putFrame(contourImg);
-
-        // works -> output2.putFrame(inst.cvDilateOutput());
-        
     }
 
     @Override
     public void log() {
        
-        // TODO add process output as a video stream to dashboard
-        //gripstab.add("Contour Output", () -> new Mat(inst.filterContoursOutput()));
-        
         // Log to Network Table `ntab` here.
-
         if ((InputCameraImageRows == 0) || (InputCameraImageCols == 0)) {
             return; // If process hasn't defined image size there is nothing to do
         }
@@ -142,7 +119,6 @@ public class PowerPortPipeline implements LightningVisionPipeline {
         int count = contours.size();
 
         ntab.getEntry("VisionFound").setNumber(count);
-        
         
         findBestTarget(contours); // Function will set number of classwide variables
 
