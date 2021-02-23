@@ -216,7 +216,7 @@ public class CameraServerConfig {
 
 		camera.setConfigJson(gson.toJson(config.config));
 		camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
-
+		
 		if (config.streamConfig != null) {
 			server.setConfigJson(gson.toJson(config.streamConfig));
 		}
