@@ -45,7 +45,11 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
 
     public static final String MODEL_FILEPATH = "/home/pi/path-classifier.pb";
 
+    public static final int RESET_OUTPUT_CYCLES = 5;
+
     private boolean shouldProcess = false;
+
+    private int determineCount = 0;
 
     private NetworkTable ntab;
 
@@ -101,8 +105,13 @@ public class GalacticSearchPathDeterminationPipeline implements LightningVisionP
             // Only Run Once
             shouldProcess = false;
             processReq.setBoolean(false);
+            determineCount = 0;
 
         }
+
+        if (determineCount > RESET_OUTPUT_CYCLES) {
+            path = RobotPaths.NONE;
+        } else determineCount++;
 
     }
 
