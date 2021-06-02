@@ -41,7 +41,7 @@ public class GripPipeline {
 	/**
 	 * Initilize pipeline value
 	 * @param name name of value
-	 * @param val 
+	 * @param val value
 	 */
 	public void initParam(String name, Object val) {
 		params.put(name, val);
@@ -112,6 +112,7 @@ public class GripPipeline {
 
 	/**
 	 * Constructor 
+	 * @param isMutable true is the pipeline should periodically scan files, false otherwise.
 	 */
 	public GripPipeline(boolean isMutable) {
 
@@ -155,6 +156,7 @@ public class GripPipeline {
 
 	/**
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
+	 * @param source0 source matrix
 	 */
 	public void process(Mat source0) {
 		// Step Blur0:

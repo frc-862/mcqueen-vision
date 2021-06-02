@@ -38,6 +38,7 @@ public class InfiniteRecharge {
 
 	/**
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
+	 * @param source0 source matrix
 	 */
 	public void process(Mat source0) {
 		// Step HSV_Threshold0:
@@ -113,7 +114,7 @@ public class InfiniteRecharge {
 
 	/**
 	 * This method is a generated getter for the output of a Find_Contours.
-	 * @return ArrayList<MatOfPoint> output from Find_Contours.
+	 * @return {@code ArrayList<MatOfPoint>} output from Find_Contours.
 	 */
 	public ArrayList<MatOfPoint> findContoursOutput() {
 		return findContoursOutput;
@@ -121,7 +122,7 @@ public class InfiniteRecharge {
 
 	/**
 	 * This method is a generated getter for the output of a Filter_Contours.
-	 * @return ArrayList<MatOfPoint> output from Filter_Contours.
+	 * @return {@code ArrayList<MatOfPoint>} output from Filter_Contours.
 	 */
 	public ArrayList<MatOfPoint> filterContoursOutput() {
 		return filterContoursOutput;
