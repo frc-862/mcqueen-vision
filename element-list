@@ -1,5 +1,2 @@
-grip
-grip.examples
-pipelines
-pipelines.examples
-pipelines.training
+util
+util.annotation
