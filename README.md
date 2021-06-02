@@ -1,6 +1,7 @@
 # McQueen Vision
 
-![gradle build](https://github.com/frc-862/mcqueen-vision/workflows/gradle%20build/badge.svg)
+![gradle build](https://github.com/frc-862/mcqueen-vision/workflows/Build/badge.svg)
+[![Docs](https://readthedocs.org/projects/pip/badge/)](https://frc-862.github.io/mcqueen-vision/)
 
 <img src="https://repository-images.githubusercontent.com/223694691/2a138780-0ed4-11ea-979c-27afe32caebe" height="300">
 
@@ -123,5 +124,5 @@ The application will be automatically started. Console output can be seen by ena
 ## Building Locally on rPi
 
 1) Run `./gradlew build`
-2) Run `./install.sh` (replaces scripts and executables) 
+2) Run `./install.sh` (replaces scripts and executables)
 3) Run `./runInteractive` in /home/pi or `sudo svc -t /service/camera` to restart service.

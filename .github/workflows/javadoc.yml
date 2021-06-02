@@ -1,6 +1,10 @@
 name: Javadoc
 
 on: [push]
+#on:
+#  push:
+#    branches:
+#      - master
 
 jobs:
   publish:
@@ -14,26 +18,6 @@ jobs:
           java-version: 11
       - name: Generate Javadoc
         run: ./gradlew javadoc
-      - name: Deploy VisionEngine Docs 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          CLEAN: true
-          FOLDER: VisionEngine/build/docs/javadoc
-          TARGET_FOLDER: javadoc/VisionEngine/*
-      - name: Deploy Pipelines Docs 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          CLEAN: true
-          FOLDER: Pipelines/build/docs/javadoc
-          TARGET_FOLDER: javadoc/Pipelines/*
       - name: Deploy Processing Docs 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.1
         env:
@@ -43,5 +27,4 @@ jobs:
           BRANCH: gh-pages
           CLEAN: true
           FOLDER: Processing/build/docs/javadoc
-          TARGET_FOLDER: javadoc/Processing/*
-          
+          TARGET_FOLDER: javadoc/*
