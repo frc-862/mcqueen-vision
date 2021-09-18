@@ -4,8 +4,8 @@ import org.opencv.core.Mat;
 
 import edu.wpi.first.networktables.NetworkTable;
 import grip.examples.YellowBallSeeker;
-import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
+import util.pipeline.LightningVisionPipeline;
 import util.annotation.Disabled;
 
 /**

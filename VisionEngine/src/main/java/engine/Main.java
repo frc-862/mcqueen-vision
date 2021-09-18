@@ -7,8 +7,8 @@ import edu.wpi.first.vision.VisionThread;
 
 import java.util.Set;
 
-import util.LightningVisionPipeline;
 import util.PipelineProcesser;
+import util.pipeline.LightningVisionPipeline;
 
 public final class Main {
 

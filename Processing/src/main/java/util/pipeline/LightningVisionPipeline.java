@@ -1,4 +1,4 @@
-package util;
+package util.pipeline;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;

@@ -4,9 +4,9 @@ import org.opencv.core.Mat;
 
 import edu.wpi.first.networktables.NetworkTable;
 import grip.examples.GripPipeline;
-import util.LightningVisionPipeline;
 import util.annotation.Disabled;
 import util.annotation.Pipeline;
+import util.pipeline.LightningVisionPipeline;
 
 /**
  * Example GRIP wrapper pipeline that updates GRIP values at runtime

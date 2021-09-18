@@ -7,6 +7,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.*;
 
 import util.annotation.*;
+import util.pipeline.LightningVisionPipeline;
 
 /**
  * Class to scan for pipelines to be implemented.

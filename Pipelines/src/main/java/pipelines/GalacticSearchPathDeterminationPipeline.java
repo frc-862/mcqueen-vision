@@ -6,8 +6,8 @@ import org.opencv.dnn.Net;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
-import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
+import util.pipeline.LightningVisionPipeline;
 
 @Pipeline(camera=1)
 public class GalacticSearchPathDeterminationPipeline implements LightningVisionPipeline {

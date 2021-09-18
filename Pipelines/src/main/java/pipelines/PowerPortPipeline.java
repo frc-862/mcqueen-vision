@@ -11,13 +11,12 @@ import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
-import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import grip.InfiniteRecharge;
-import util.CameraServerConfig;
-import util.LightningVisionPipeline;
 import util.annotation.Pipeline;
+import util.pipeline.LightningVisionPipeline;
+
 import java.lang.Math;
 
 @Pipeline(camera=0)

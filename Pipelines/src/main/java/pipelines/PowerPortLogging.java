@@ -1,7 +1,7 @@
 package pipelines;
 
-import util.LoggingPipeline;
 import util.annotation.Pipeline;
+import util.pipeline.LoggingPipeline;
 
 @Pipeline(camera=0)
 public class PowerPortLogging extends LoggingPipeline {
