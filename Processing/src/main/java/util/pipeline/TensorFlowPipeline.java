@@ -6,11 +6,11 @@ import org.opencv.dnn.Net;
 
 public abstract class TensorFlowPipeline implements LightningVisionPipeline {
 
-    private final String modelFile;
+    protected final String modelFile;
 
-    private final String configFile;
+    protected final String configFile;
 
-    private Net net;
+    protected Net net;
 
     public Enum<?> inferenceResult;
 
