@@ -126,3 +126,15 @@ The application will be automatically started. Console output can be seen by ena
 1) Run `./gradlew build`
 2) Run `./install.sh` (replaces scripts and executables)
 3) Run `./runInteractive` in /home/pi or `sudo svc -t /service/camera` to restart service.
+
+## Configuring for Competition
+
+Some network issues have occured at competitions.
+To prevent this from happening, add the following to the end of `/etc/hosts`:
+
+```bash
+10.8.62.10      roboRIO-862-FRC.lan     # name of roborio
+10.8.62.10      roboRIO-862-FRC.frc-field.lan   # name of roborio when connected to FMS
+```
+
+Where `10.8.62.10` is the IP address of the raspberry pi on the local network.
