@@ -1,4 +1,4 @@
-package pipelines.training;
+package pipelines.infiniterecharge.training;
 
 import util.annotation.Disabled;
 import util.annotation.Pipeline;

@@ -1,4 +1,4 @@
-package pipelines;
+package pipelines.infiniterecharge;
 
 import org.opencv.core.Mat;
 import org.opencv.dnn.Dnn;

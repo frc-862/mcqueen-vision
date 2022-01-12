@@ -1,4 +1,4 @@
-package grip;
+package grip.infiniterecharge;
 
 import java.io.File;
 import java.io.FileWriter;

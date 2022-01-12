@@ -1,4 +1,4 @@
-package pipelines;
+package pipelines.infiniterecharge;
 
 import java.util.ArrayList;
 
@@ -13,13 +13,15 @@ import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
-import grip.InfiniteRecharge;
+import grip.infiniterecharge.InfiniteRecharge;
+import util.annotation.Disabled;
 import util.annotation.Pipeline;
 import util.pipeline.LightningVisionPipeline;
 
 import java.lang.Math;
 
 @Pipeline(camera=0)
+@Disabled
 public class PowerPortPipeline implements LightningVisionPipeline {
 
     private InfiniteRecharge inst;
